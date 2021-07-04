@@ -1,0 +1,162 @@
+:root{
+    --lgrey: #b0b0bb;
+    --dgrey: #202024;
+    --dmain: #280048;
+    --lmain: #733eca;
+    --pop: #62eed7;
+    scroll-behavior: smooth;
+}
+
+.code{
+    font-family: 'Courier New';
+    font-weight: lighter;
+}
+.pop{
+    color: var(--pop);
+}
+.dark{
+    color: var(--dmain);
+}
+.light{
+    color: var(--lmain);
+}
+.display-none{
+    display:none;
+}
+.txt-cent{
+    text-align:center;
+}
+
+*{
+    font-family: sans-serif;
+}
+body *{
+    flex: 0 1 auto;
+}
+body{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    color: var(--dgrey);
+    background-color: white;
+}
+body > #content{
+    position: relative;
+    flex: 1 0 auto;
+}
+
+nav{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    background-color: var(--dgrey);
+}
+nav img{
+      max-height: 4em;
+      padding: 0;
+      margin: 0;
+}
+nav > a{
+    flex: 0 0 1.5em;
+    text-decoration: none;
+    font-size: 1.5em;
+    border-radius: 10px;
+}
+nav > a.text {
+    margin: 1% 0 0 0;
+    padding: 4px;
+    color: var(--lgrey);
+    transition: all .75s ease-in;
+}
+nav a.text:hover {
+    transition: all .5s ease-in;
+    background-color: var(--lmain);
+    font-size: 1.75em;
+}
+
+
+button.btn-submit{
+    background-color: var(--dmain);
+    color: var(--lgrey);
+    width: 40%;
+    transition: .5s ease-in;
+    font-size: 1.5em !important;
+    padding: .5em;
+    border:none;
+    border-radius: .5em;
+    box-shadow: 4px 4px 4px .1em rgba(0,0,0,0.5);
+}
+button.btn-submit:hover{
+    background-color: var(--lmain);
+    color: white;
+    width: 80%;
+    transition: .5s ease-out;
+
+}
+button.btn-submit:active{
+    box-shadow:  2px 2px 4px .05em rgba(0,0,0,.75);
+    transform: translateY(10%);
+}
+
+header{
+    display: flex;
+    flex-flow: column wrap;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    min-height: 10vh;
+    margin: 20px 0;
+}
+header > h1{
+    font-size: 2.5em;
+    color: var(--dmain);
+    margin: 0 5px 20px;
+}
+header > p{
+    color: var(--dgrey);
+    margin: 5px 0;
+}
+
+textarea{
+    resize:none;
+}
+
+footer{
+    flex: 0 0 auto;
+    border-top: 1px dashed var(--lgrey);
+    margin: 10px 5% 0;
+    padding: 5px 0 0 2px;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content:space-between;
+}
+
+footer > p{
+    color: var(--lgrey);
+    font-size: 0.8em;
+}
+footer > span{
+    display: flex;
+    flex-flow: row-reverse nowrap;
+    align-items: center;
+    flex: 0 1 auto;
+}
+footer > span > a {
+    padding: 5%;
+}
+
+a.dev{
+    text-decoration: none;
+    color: inherit;
+    transition: .5s ease-in;
+}
+
+a.dev:hover{
+    color: var(--lmain);
+    font-weight: 600;
+    cursor: pointer;
+}
