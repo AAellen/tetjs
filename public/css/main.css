@@ -1,24 +1,20 @@
 :root{
     --lgrey: #b0b0bb;
     --dgrey: #202024;
-    --dmain: #280048;
-    --lmain: #733eca;
-    --pop: #62eed7;
-    scroll-behavior: smooth;
+    --main: #8884ff;
+    --pop: #6dfacd;
 }
+
 
 .code{
     font-family: 'Courier New';
     font-weight: lighter;
 }
-.pop{
+.clr-pop{
     color: var(--pop);
 }
-.dark{
-    color: var(--dmain);
-}
-.light{
-    color: var(--lmain);
+.clr-main{
+    color: var(--main);
 }
 .display-none{
     display:none;
@@ -69,17 +65,16 @@ nav > a.text {
     margin: 1% 0 0 0;
     padding: 4px;
     color: var(--lgrey);
-    transition: all .75s ease-in;
+    transition: color .5s ease-in;
 }
 nav a.text:hover {
-    transition: all .5s ease-in;
-    background-color: var(--lmain);
-    font-size: 1.75em;
+    transition: color .25s ease-in;
+    color: var(--pop);
 }
 
 
 button.btn-submit{
-    background-color: var(--dmain);
+    background-color: var(--main);
     color: var(--lgrey);
     width: 40%;
     transition: .5s ease-in;
@@ -90,7 +85,7 @@ button.btn-submit{
     box-shadow: 4px 4px 4px .1em rgba(0,0,0,0.5);
 }
 button.btn-submit:hover{
-    background-color: var(--lmain);
+    background-color: var(--pop);
     color: white;
     width: 80%;
     transition: .5s ease-out;
@@ -113,7 +108,7 @@ header{
 }
 header > h1{
     font-size: 2.5em;
-    color: var(--dmain);
+    color: var(--main);
     margin: 0 5px 20px;
 }
 header > p{
@@ -147,16 +142,4 @@ footer > span{
 }
 footer > span > a {
     padding: 5%;
-}
-
-a.dev{
-    text-decoration: none;
-    color: inherit;
-    transition: .5s ease-in;
-}
-
-a.dev:hover{
-    color: var(--lmain);
-    font-weight: 600;
-    cursor: pointer;
 }
