@@ -1,11 +1,28 @@
-#game_canvas{
+#game-canvas{
     max-width: 100vw;
 }
+#game-over{
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+}
+#game-over > *:not(.btn-submit){
+    color: var(--pop);
+    font-size:1.5em;
+    text-align: center;
+}
 
-div#content{
+#container > *:not(#game-canvas){
+    position: absolute;
+}
+
+#container{
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 2% 0;
+    position: relative;
 }
