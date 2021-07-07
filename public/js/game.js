@@ -44,14 +44,16 @@ function getPieceConfig(pieceNum, orientation) {
 function genNextPiece(SQUARE_SIZE) {
     swappedHeld = false;
     piece = nextPieces.shift();
-    rotation = 0;
     piecePos = [3, 0]
     nextPieces = nextPieces.concat(randint(1, 7));
 
     drawNext(ctx, SQUARE_SIZE)
     // ensure that spawned piece doesn't overlap with others already in the grid
-    if (!canPieceMove(0, 0)) { document.dispatchEvent(new Event("Game Over")); return false }
-    else { return true }
+    for (rotation=0; rotation<4; rotation++){
+        if(canPieceMove(0,0)){return true}
+    }
+    document.dispatchEvent(new Event("Game Over"));
+    return false;
 }
 
 function canPieceMove(dx = 0, dy = 0) {
