@@ -86,6 +86,8 @@ function movePiece(dx, dy, SQUARE_SIZE) {
                 y = piecePos[1] + yoff;
                 grid[get1Dindex(x, y, 10)] = piece;
             });
+            //check for row clear
+            clearLines();
             // and get the next piece
             increaseScore(5, SQUARE_SIZE)
             if (genNextPiece(SQUARE_SIZE)) {
@@ -96,6 +98,48 @@ function movePiece(dx, dy, SQUARE_SIZE) {
     }
 }
 
+function clearLines(SQUARE_SIZE){
+    cleared=[]
+    for (i=19;i>=0;i--){
+        foundEmpty=false
+        for(j=0;j<10;j++){
+            if (grid[get1Dindex(j, i, 10)]==0){
+                //this line has an empty square so ignore it
+                foundEmpty=true;
+                break;
+            }
+        }
+        if(!foundEmpty){
+            cleared = cleared.concat(i)
+        }
+    }
+    console.log(cleared)
+    for(i=0; i<cleared.length; i++){
+        // adjust y index of line to clear according to how many lines have been cleared underneath it
+        line = cleared[i] +i
+        console.log([cleared[i],line])
+        // remove all from full line
+        for(j=0;j<10;j++){
+            
+            grid[get1Dindex(j, line)] = 0
+        }
+        // shift all rows above it down
+        
+        for(j=line; j>0; j--){
+            for(k=0;k<10;k++){
+                console.log(`changing ${[k,j]} to ${grid[get1Dindex(k, j-1,10)]}`)
+                grid[get1Dindex(k, j, 10)] = grid[get1Dindex(k, j-1, 10)];
+            }
+        }
+        // and make top row blank
+        for(k=0;k<10;k++){
+            grid[get1Dindex(k, 0)] = 0;
+        }
+        tmp=i
+        drawGrid(ctx, grid, SQUARE_SIZE);
+        i=tmp
+    }
+}
 
 function drawBackground(context, SQUARE_SIZE) {
     // grid
