@@ -5,12 +5,16 @@
     background-color: rgba(0,0,0,0.5);
     display: flex;
     flex-flow: column nowrap;
-    justify-content: center;
+    align-items: center;
+    justify-content: space-around;
+    
 }
 #game-over > *:not(.btn-submit){
     color: var(--pop);
     font-size:1.5em;
     text-align: center;
+    margin: 2%;
+   
 }
 
 #container > *:not(#game-canvas){
