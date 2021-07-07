@@ -113,11 +113,9 @@ function clearLines(SQUARE_SIZE){
             cleared = cleared.concat(i)
         }
     }
-    console.log(cleared)
     for(i=0; i<cleared.length; i++){
         // adjust y index of line to clear according to how many lines have been cleared underneath it
         line = cleared[i] +i
-        console.log([cleared[i],line])
         // remove all from full line
         for(j=0;j<10;j++){
             
@@ -127,7 +125,6 @@ function clearLines(SQUARE_SIZE){
         
         for(j=line; j>0; j--){
             for(k=0;k<10;k++){
-                console.log(`changing ${[k,j]} to ${grid[get1Dindex(k, j-1,10)]}`)
                 grid[get1Dindex(k, j, 10)] = grid[get1Dindex(k, j-1, 10)];
             }
         }
