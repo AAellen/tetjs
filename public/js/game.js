@@ -142,11 +142,9 @@ function drawNext(context, SQUARE_SIZE){
         context.fillRect(13 * SQUARE_SIZE, yoff + i * 2 * SQUARE_SIZE, 2 * SQUARE_SIZE, 2 * SQUARE_SIZE);
         colour = getPieceColour(nextPieces[i])
         config = getPieceConfig(nextPieces[i], 0)
-        console.log(config)
         for(j=0; j<16; j++){
             [x,y] = get2Dcoords(j, 4)
             context.fillStyle = config.includes(j)? colour: 'white';
-            console.log([j, y, (i*2*SQUARE_SIZE) + (y*0.5*SQUARE_SIZE), context.fillStyle])
             context.fillRect(xoff + x*SQUARE_SIZE*0.5, yoff + (i*2*SQUARE_SIZE) + (y*0.5*SQUARE_SIZE), 0.5*SQUARE_SIZE, 0.5*SQUARE_SIZE)
         }
     }
