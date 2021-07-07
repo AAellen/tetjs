@@ -19,9 +19,9 @@ function increaseScore(dScore, SQUARE_SIZE) {
     drawScore(ctx, SQUARE_SIZE)
 }
 
-function getPieceColor(pieceNum) {
-    colors = ['white', 'skyblue', 'red', 'green', 'purple', 'blue', 'orange', 'yellow']
-    return colors[pieceNum];
+function getPieceColour(pieceNum) {
+    colours = ['white', 'skyblue', 'red', 'green', 'purple', 'blue', 'orange', 'yellow']
+    return colours[pieceNum];
 }
 function getPieceConfig(pieceNum, orientation) {
     if (pieceNum == 0) {
@@ -122,7 +122,7 @@ function drawGrid(context, grid, SQUARE_SIZE, gridWidth = 10) {
     });
     for (i = 0; i < newGrid.length; i++) {
         var [x, y] = get2Dcoords(i, gridWidth);
-        context.fillStyle = getPieceColor(newGrid[i]); // change color based on contents of square
+        context.fillStyle = getPieceColour(newGrid[i]); // change colour based on contents of square
         context.fillRect(x * SQUARE_SIZE + 1, y * SQUARE_SIZE + 1, SQUARE_SIZE - 2, SQUARE_SIZE - 2)
     }
 }
