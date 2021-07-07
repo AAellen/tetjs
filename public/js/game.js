@@ -100,14 +100,7 @@ function drawBackground(context, SQUARE_SIZE) {
     context.fillStyle = 'grey';
     context.fillRect(0, 0, 10 * SQUARE_SIZE, 20 * SQUARE_SIZE);
 
-    //next panel
-    context.font = 'bold 18px monospace';
-    yoff = context.measureText("Next").actualBoundingBoxAscent + 2;
-    context.fillText("Next", 13 * SQUARE_SIZE, yoff - 2)
-    // 5 4x4 boxes to hold the next tetriminos
-    for (i = 0; i < 5; i++) {
-        context.strokeRect(13 * SQUARE_SIZE, yoff + i * 2 * SQUARE_SIZE, 2 * SQUARE_SIZE, 2 * SQUARE_SIZE);
-    }
+    drawNext(context, SQUARE_SIZE)
 
     // hold panel
     context.strokeRect(12 * SQUARE_SIZE, 16 * SQUARE_SIZE, 4 * SQUARE_SIZE, 4 * SQUARE_SIZE);
@@ -136,8 +129,9 @@ function drawScore(context, SQUARE_SIZE) {
     context.fillText(text, 12 * SQUARE_SIZE, 12 * SQUARE_SIZE + h, 4 * SQUARE_SIZE)
 }
 
-function drawNext(context, SQUARE_SIZE){
-    
+function drawNext(context, SQUARE_SIZE){ 
+    context.fillStyle='grey'
+    context.font = 'bold 18px monospace';
     yoff = context.measureText("Next").actualBoundingBoxAscent + 2;
     xoff=13 * SQUARE_SIZE;
     context.fillText("Next", 13 * SQUARE_SIZE, yoff - 2)
@@ -154,7 +148,10 @@ function drawNext(context, SQUARE_SIZE){
             context.fillRect(xoff + x*SQUARE_SIZE*0.5, yoff + (i*2*SQUARE_SIZE) + (y*0.5*SQUARE_SIZE), 0.5*SQUARE_SIZE, 0.5*SQUARE_SIZE)
         }
     }
-    
+    // draw boxes around the next pieces
+    for (i = 0; i < 5; i++) {
+        context.strokeRect(xoff, yoff + i * 2 * SQUARE_SIZE, 2 * SQUARE_SIZE, 2 * SQUARE_SIZE);
+    }
 }
 
 function onKeyDown(e, SQUARE_SIZE) {
@@ -227,7 +224,6 @@ function startGame(SQUARE_SIZE) {
 
     drawBackground(ctx, SQUARE_SIZE)
     drawGrid(ctx, grid, SQUARE_SIZE)
-    drawNext(ctx, SQUARE_SIZE)
     drawScore(ctx, SQUARE_SIZE)
 
     prev_keydown = window.onkeydown;
