@@ -13,7 +13,7 @@ function get2Dcoords(idx, width) {
 function increaseScore(dScore, SQUARE_SIZE) {
     prev=score
     score += dScore
-    if (Math.floor(score/50)>Math.floor(prev/50)){
+    if (Math.floor(score/150)>Math.floor(prev/150)){
         document.dispatchEvent(new Event('speedUp'))
     }
     drawScore(ctx, SQUARE_SIZE)
@@ -209,6 +209,7 @@ function startGame(SQUARE_SIZE) {
     prev_keydown = window.onkeydown;
     window.onkeydown = (e) => { onKeyDown(e, SQUARE_SIZE); return false }
     document.addEventListener('Game Over', () => {
+        drawGrid(ctx, grid, SQUARE_SIZE)
         clearInterval(pieceFallInterval);
         window.onkeydown = prev_keydown;
 
@@ -224,7 +225,7 @@ function startGame(SQUARE_SIZE) {
         clearInterval(pieceFallInterval)
         pieceFallInterval = setInterval(() => {
             movePiece(0, 1, SQUARE_SIZE)
-        }, 1000 / fallSpeed);
+        }, 2000 / fallSpeed);
     })
     document.addEventListener('speedUp', () => {
         fallSpeed++;
@@ -241,13 +242,13 @@ function startGame(SQUARE_SIZE) {
         btnPlay.parentElement.className = "display-none";
         pieceFallInterval = setInterval(() => {
             movePiece(0, 1, SQUARE_SIZE)
-        }, 1000 / fallSpeed);
+        }, 2000 / fallSpeed);
     });
 
     pieceFallInterval = setInterval(() => {
         movePiece(0, 1, SQUARE_SIZE)
         drawGrid(ctx, grid, SQUARE_SIZE);
-    }, 1000 / fallSpeed);
+    }, 2000 / fallSpeed);
 }
 
 window.addEventListener('DOMContentLoaded', (event) => {
