@@ -100,7 +100,7 @@ function drawBackground(context, SQUARE_SIZE) {
     context.fillRect(0, 0, 10 * SQUARE_SIZE, 20 * SQUARE_SIZE);
 
     //next panel
-    ctx.font = 'bold 18px monospace';
+    context.font = 'bold 18px monospace';
     yoff = context.measureText("Next").actualBoundingBoxAscent + 2;
     context.fillText("Next", 13 * SQUARE_SIZE, yoff - 2)
     // 5 4x4 boxes to hold the next tetriminos
