@@ -16,7 +16,7 @@
     margin: 2%;
 }
 
-#menu{
+#menu:not(.display-none){
     display: flex;
     flex-flow: column nowrap;
     justify-content: space-around;
