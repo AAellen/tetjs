@@ -41,13 +41,14 @@ function getPieceConfig(pieceNum, orientation) {
     return configs[orientation % configs.length]
 }
 
-function genNextPiece() {
+function genNextPiece(SQUARE_SIZE) {
     swappedHeld = false;
     piece = nextPieces.shift();
     rotation = 0;
     piecePos = [3, 0]
     nextPieces = nextPieces.concat(randint(1, 7));
 
+    drawNext(ctx, SQUARE_SIZE)
     // ensure that spawned piece doesn't overlap with others already in the grid
     if (!canPieceMove(0, 0)) { document.dispatchEvent(new Event("Game Over")); return false }
     else { return true }
@@ -85,7 +86,7 @@ function movePiece(dx, dy, SQUARE_SIZE) {
             });
             // and get the next piece
             increaseScore(5, SQUARE_SIZE)
-            if (genNextPiece()) {
+            if (genNextPiece(SQUARE_SIZE)) {
                 drawGrid(ctx, grid, SQUARE_SIZE);
             };
         }
@@ -135,6 +136,27 @@ function drawScore(context, SQUARE_SIZE) {
     context.fillText(text, 12 * SQUARE_SIZE, 12 * SQUARE_SIZE + h, 4 * SQUARE_SIZE)
 }
 
+function drawNext(context, SQUARE_SIZE){
+    
+    yoff = context.measureText("Next").actualBoundingBoxAscent + 2;
+    xoff=13 * SQUARE_SIZE;
+    context.fillText("Next", 13 * SQUARE_SIZE, yoff - 2)
+
+    for (i = 0; i < 5; i++) {
+        context.fillRect(13 * SQUARE_SIZE, yoff + i * 2 * SQUARE_SIZE, 2 * SQUARE_SIZE, 2 * SQUARE_SIZE);
+        colour = getPieceColour(nextPieces[i])
+        config = getPieceConfig(nextPieces[i], 0)
+        console.log(config)
+        for(j=0; j<16; j++){
+            [x,y] = get2Dcoords(j, 4)
+            context.fillStyle = config.includes(j)? colour: 'white';
+            console.log([j, y, (i*2*SQUARE_SIZE) + (y*0.5*SQUARE_SIZE), context.fillStyle])
+            context.fillRect(xoff + x*SQUARE_SIZE*0.5, yoff + (i*2*SQUARE_SIZE) + (y*0.5*SQUARE_SIZE), 0.5*SQUARE_SIZE, 0.5*SQUARE_SIZE)
+        }
+    }
+    
+}
+
 function onKeyDown(e, SQUARE_SIZE) {
     switch (e.code) {
         case controls["moveLeft"]:
@@ -166,7 +188,7 @@ function onKeyDown(e, SQUARE_SIZE) {
         case controls["hold"]:
             if (heldPiece == 0) {
                 heldPiece = piece;
-                genNextPiece()
+                genNextPiece(SQUARE_SIZE)
                 swappedHeld = true;
             } else if (swappedHeld == false) {
                 tmp = piece;
@@ -192,7 +214,7 @@ function startGame(SQUARE_SIZE) {
     heldPiece = 0;
     fallSpeed = 1;
     score = 0
-    genNextPiece();
+    genNextPiece(SQUARE_SIZE);
     controls = {
         "moveLeft": "KeyA",
         "moveRight": "KeyD",
@@ -205,6 +227,8 @@ function startGame(SQUARE_SIZE) {
 
     drawBackground(ctx, SQUARE_SIZE)
     drawGrid(ctx, grid, SQUARE_SIZE)
+    drawNext(ctx, SQUARE_SIZE)
+    drawScore(ctx, SQUARE_SIZE)
 
     prev_keydown = window.onkeydown;
     window.onkeydown = (e) => { onKeyDown(e, SQUARE_SIZE); return false }
