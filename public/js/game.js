@@ -89,7 +89,7 @@ function movePiece(dx, dy, SQUARE_SIZE) {
             //check for row clear
             clearLines();
             // and get the next piece
-            increaseScore(5, SQUARE_SIZE)
+            increaseScore(1, SQUARE_SIZE)
             if (genNextPiece(SQUARE_SIZE)) {
                 drawGrid(ctx, grid, SQUARE_SIZE);
             };
@@ -136,6 +136,8 @@ function clearLines(SQUARE_SIZE){
         drawGrid(ctx, grid, SQUARE_SIZE);
         i=tmp
     }
+
+    increaseScore(cleared.length*5, SQUARE_SIZE)
 }
 
 function drawBackground(context, SQUARE_SIZE) {
@@ -279,6 +281,7 @@ function startGame(SQUARE_SIZE) {
         div.id = "game-over";
         div.style.height = `${15 * SQUARE_SIZE}px`
         div.style.width = `${12 * SQUARE_SIZE}px`
+        
         div.appendChild(btnReplay)
         canvas.parentElement.appendChild(div);
     });
