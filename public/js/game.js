@@ -281,7 +281,7 @@ function startGame(SQUARE_SIZE) {
         div.id = "game-over";
         div.style.height = `${15 * SQUARE_SIZE}px`
         div.style.width = `${12 * SQUARE_SIZE}px`
-        
+        btnReplay.className="btn-submit"
         div.appendChild(btnReplay)
         canvas.parentElement.appendChild(div);
     });
