@@ -197,6 +197,24 @@ function drawNext(context, SQUARE_SIZE){
     }
 }
 
+function bindFall(SQUARE_SIZE){
+    interval = setInterval(() => {
+        movePiece(0, 1, SQUARE_SIZE)
+    }, 2000 / fallSpeed);
+    return interval
+}
+function unbindFall(){
+    clearInterval(pieceFallInterval);
+}
+function bindKeyDown(SQUARE_SIZE){
+    prev_keydown=window.onkeydown;
+    window.onkeydown = (e) => { onKeyDown(e, SQUARE_SIZE); return false };
+    console.log(window.onkeydown)
+}
+function unbindKeyDown(){
+    window.onkeydown = prev_keydown;
+}
+
 function onKeyDown(e, SQUARE_SIZE) {
     switch (e.code) {
         case controls["moveLeft"]:
@@ -207,7 +225,8 @@ function onKeyDown(e, SQUARE_SIZE) {
             break;
         case controls["softDown"]:
             movePiece(0, 1, SQUARE_SIZE);
-            document.dispatchEvent(new Event('resetFallInterval'))
+            unbindFall();
+            pieceFallInterval = bindFall(SQUARE_SIZE);
             break;
         case controls["hardDown"]:
             do {
@@ -269,50 +288,37 @@ function startGame(SQUARE_SIZE) {
     drawGrid(ctx, grid, SQUARE_SIZE)
     drawScore(ctx, SQUARE_SIZE)
 
-    prev_keydown = window.onkeydown;
-    window.onkeydown = (e) => { onKeyDown(e, SQUARE_SIZE); return false }
-    document.addEventListener('Game Over', () => {
-        drawGrid(ctx, grid, SQUARE_SIZE)
-        clearInterval(pieceFallInterval);
-        window.onkeydown = prev_keydown;
+    bindKeyDown(SQUARE_SIZE);
+    pieceFallInterval = bindFall(SQUARE_SIZE);
+    console.log(window.onkeydown)
 
-        div = document.createElement("div");
-        div.innerHTML = `<h3>Game Over</h3><h5>Score: ${score}</h5>`;
-        div.id = "game-over";
-        div.style.height = `${15 * SQUARE_SIZE}px`
-        div.style.width = `${12 * SQUARE_SIZE}px`
-        btnReplay.className="btn-submit"
-        div.appendChild(btnReplay)
-        canvas.parentElement.appendChild(div);
+    document.addEventListener('Game Over', () => {
+        drawGrid(ctx, grid, SQUARE_SIZE);
+        unbindFall();
+        unbindKeyDown();
+        gameOver.className="";
+        gameOver.innerHTML = `<h3>Game Over</h3><h5>Score: ${score}</h5>`;
+        gameOver.appendChild(btnReplay);
+        btnReplay.className="btn-submit";
     });
-    document.addEventListener('resetFallInterval', () => {
-        clearInterval(pieceFallInterval)
-        pieceFallInterval = setInterval(() => {
-            movePiece(0, 1, SQUARE_SIZE)
-        }, 2000 / fallSpeed);
-    })
     document.addEventListener('speedUp', () => {
         fallSpeed++;
-        document.dispatchEvent(new Event('resetFallInterval'))
+        unbindFall();
+        pieceFallInterval = bindFall(SQUARE_SIZE);
     });
     document.addEventListener('pause', () => {
-        clearInterval(pieceFallInterval)
+        unbindFall();
+        unbindKeyDown();
         pauseMenu.className="";// not display-none
         btnPlay.className="display-none";
         btnReplay.className="btn-submit";
         btnContinue.className="btn-submit"
     });
     document.addEventListener('unPause', () => {
+        pieceFallInterval = bindFall(SQUARE_SIZE);
+        bindKeyDown(SQUARE_SIZE);
         btnPlay.parentElement.className = "display-none";
-        pieceFallInterval = setInterval(() => {
-            movePiece(0, 1, SQUARE_SIZE)
-        }, 2000 / fallSpeed);
     });
-
-    pieceFallInterval = setInterval(() => {
-        movePiece(0, 1, SQUARE_SIZE)
-        drawGrid(ctx, grid, SQUARE_SIZE);
-    }, 2000 / fallSpeed);
 }
 
 window.addEventListener('DOMContentLoaded', (event) => {
@@ -322,11 +328,16 @@ window.addEventListener('DOMContentLoaded', (event) => {
     canvas.width = SQUARE_SIZE * 16;
     ctx = canvas.getContext("2d");
     
-    // create pause menu buttons
+    // create html for pause menu and game over menu
     pauseMenu = document.createElement("div");
     pauseMenu.id='menu';
-    pauseMenu.style.height = `${15 * SQUARE_SIZE}px`
-    pauseMenu.style.width = `${12 * SQUARE_SIZE}px`
+    pauseMenu.style.height = `${15 * SQUARE_SIZE}px`;
+    pauseMenu.style.width = `${12 * SQUARE_SIZE}px`;
+    gameOver = document.createElement("div");
+    gameOver.id = "game-over";
+    gameOver.className="display-none";
+    gameOver.style.height = `${15 * SQUARE_SIZE}px`;
+    gameOver.style.width = `${12 * SQUARE_SIZE}px`;
     btnPlay = document.createElement("button");
     btnPlay.innerText = "Start Game";
     btnPlay.className = "btn-submit";
@@ -337,6 +348,12 @@ window.addEventListener('DOMContentLoaded', (event) => {
     btnReplay.innerText = "Restart";
     btnReplay.className = "display-none";
     btnReplay.onclick = () => {
+        if (btnReplay.parentElement.id=="game-over"){
+            gameOver.className="display-none"
+            pauseMenu.appendChild(btnReplay)
+        }else{
+            pauseMenu.className="display-none"
+        }
         startGame(SQUARE_SIZE);
     }
     btnContinue = document.createElement("button");
@@ -346,7 +363,9 @@ window.addEventListener('DOMContentLoaded', (event) => {
         document.dispatchEvent(new Event('unPause'));
     }
     pauseMenu.appendChild(btnPlay);
-    pauseMenu.appendChild(btnReplay);
     pauseMenu.appendChild(btnContinue);
+    pauseMenu.appendChild(btnReplay);
+
     canvas.parentElement.appendChild(pauseMenu);
+    canvas.parentElement.appendChild(gameOver);
 });
