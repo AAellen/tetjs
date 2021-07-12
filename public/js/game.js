@@ -75,17 +75,15 @@ function canPieceMove(dx = 0, dy = 0) {
 }
 
 function movePiece(dx, dy, SQUARE_SIZE) {
-    console.log(piecePosInt[1], dy)
     if (canPieceMove(dx, dy)) {
         piecePosInt = [piecePosInt[0] + dx, piecePosInt[1] + dy];
-        if(moving){
+        if (moving) {
             piecePos = [piecePos[0] + dx, piecePos[1] + dy];
-        }else{
-            piecePos=piecePosInt;
+        } else {
+            piecePos = piecePosInt;
         }
         drawGrid(ctx, grid, SQUARE_SIZE);
     } else {
-        console.log("cannot move piece")
         // if movement is downwards then set piece into the grid
         if (dy > 0) {
             setIntoGrid(SQUARE_SIZE);
@@ -95,11 +93,8 @@ function movePiece(dx, dy, SQUARE_SIZE) {
 }
 
 function startMovingPiece(dx, dy, SQUARE_SIZE, time) {
-    if (moving) {
-        console.log("already moving");
-        return;
-    }
-    
+    if (moving) {return;}
+
     if (canPieceMove(dx, dy)) {
         console.log("moving now!", piecePosInt, piecePos);
         moving = true;
@@ -122,12 +117,10 @@ function finishMovingPiece(dx, dy) {
     clearInterval(falling);
     moving = false;
     piecePosInt = [piecePosInt[0] + dx, piecePosInt[1] + dy];
-    console.log("end", piecePosInt, piecePos)
     piecePos = piecePosInt; //solve any rounding errors
 }
 
 function setIntoGrid(SQUARE_SIZE) {
-    console.log("setting", piecePos, piecePosInt)
     getPieceConfig(piece, rotation).forEach(s => {
         var [xoff, yoff] = get2Dcoords(s, 4);
         x = piecePosInt[0] + xoff;
@@ -181,7 +174,6 @@ function clearLines(SQUARE_SIZE) {
         drawGrid(ctx, grid, SQUARE_SIZE);
         i = tmp;
     }
-
     increaseScore(cleared.length * 5, SQUARE_SIZE);
 }
 
@@ -208,7 +200,7 @@ function drawGrid(context, grid, SQUARE_SIZE, gridWidth = 10) {
 
     getPieceConfig(piece, rotation).forEach((elem) => {
         [xoff, yoff] = get2Dcoords(elem, 4);
-        x = piecePos[0] + xoff
+        x = piecePos[0] + xoff;
         y = piecePos[1] + yoff;
         context.fillRect(x * SQUARE_SIZE, y * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
     });
@@ -249,7 +241,7 @@ function bindFall(SQUARE_SIZE) {
     moving = false;
     startMovingPiece(0, 1, SQUARE_SIZE, 2000 / fallSpeed);
     interval = setInterval(() => {
-        finishMovingPiece(0, 1)
+        finishMovingPiece(0, 1);
         startMovingPiece(0, 1, SQUARE_SIZE, 2000 / fallSpeed);
     }, 2000 / fallSpeed);
     return interval;
@@ -264,7 +256,7 @@ function bindKeyDown(SQUARE_SIZE) {
         prev_keydown = window.onkeydown;
         window.onkeydown = (e) => { onKeyDown(e, SQUARE_SIZE); return false };
     } else {
-        console.log("already bound")
+        console.log("already bound");
     }
 }
 function unbindKeyDown() {
@@ -450,8 +442,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
         div = document.createElement("div");
         keySpan = document.createElement("span");
         valSpan = document.createElement("span");
-        div.className = "key-bind"
-        valSpan.className = "bind-btn"
+        div.className = "key-bind";
+        valSpan.className = "bind-btn";
         keySpan.innerText = key;
         valSpan.innerText = controls[key];
 
@@ -468,7 +460,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
         div.appendChild(keySpan);
         div.appendChild(valSpan);
-        bindMenu.appendChild(div)
+        bindMenu.appendChild(div);
     }
     bckBtn = document.createElement("button");
     bckBtn.innerText = "Back";
