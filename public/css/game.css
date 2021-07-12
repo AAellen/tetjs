@@ -9,6 +9,23 @@
     margin: 2%;
 }
 
+#bind-menu > div.key-bind{
+    display:flex;
+    flex-wrap: nowrap;
+    width:90%;
+    margin:2%;
+    justify-content: space-between;
+}
+#bind-menu > div.key-bind > .bind-btn{
+    background-color: var(--dgrey);
+    color: var(--lgrey);
+    padding: 2%;
+    border-radius: 5px;
+}
+#bind-menu > div.key-bind > .binding{
+    background-color: var(--main);
+}
+
 #container > *:not(#game-canvas):not(.display-none){
     position: absolute;
     background-color: rgba(0,0,0,0.5);
