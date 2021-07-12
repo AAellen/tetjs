@@ -280,7 +280,7 @@ function onKeyDown(e, SQUARE_SIZE) {
                 do {
                     res = movePiece(0, 1, SQUARE_SIZE);
                 }
-                while (res != false)
+                while (res != false);
                 break;
             case controls["rotate left"]:
                 rotation += 1;
@@ -414,13 +414,13 @@ window.addEventListener('DOMContentLoaded', (event) => {
             pauseMenu.className = "display-none";
         }
         startGame(SQUARE_SIZE);
-    }
+    };
     btnContinue = document.createElement("button");
     btnContinue.innerText = "Continue";
     btnContinue.className = "display-none";
     btnContinue.onclick = () => {
         document.dispatchEvent(new Event('unPause'));
-    }
+    };
     controls = {
         "move left": "KeyA",
         "move right": "KeyD",
@@ -436,7 +436,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
     btnBind.className = "btn-submit";
     btnBind.onclick = () => {
         document.dispatchEvent(new Event('bind'));
-    }
+    };
     bindKeyDown(SQUARE_SIZE);
     for (var key in controls) {
         div = document.createElement("div");
@@ -469,7 +469,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         bindMenu.className = "display-none";
         pauseMenu.className = "";
         binding = '';
-    }
+    };
     bindMenu.appendChild(bckBtn);
     document.addEventListener('bind', () => {
         binding = '';
