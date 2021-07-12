@@ -44,8 +44,7 @@ function getPieceConfig(pieceNum, orientation) {
 function genNextPiece(SQUARE_SIZE) {
     swappedHeld = false;
     piece = nextPieces.shift();
-    piecePosInt = [3, 0];
-    piecePos = piecePosInt;
+    piecePos = [3, 0];
     nextPieces = nextPieces.concat(randint(1, 7));
 
     drawNext(ctx, SQUARE_SIZE);
@@ -62,12 +61,12 @@ function canPieceMove(dx = 0, dy = 0) {
     occupied = getPieceConfig(piece, rotation);
     for (i = 0; i < occupied.length; i++) {
         var [xoff, yoff] = get2Dcoords(occupied[i], 4);
-        x = piecePosInt[0] + xoff + dx;
-        y = piecePosInt[1] + yoff + dy;
+        x = piecePos[0] + xoff + dx;
+        y = piecePos[1] + yoff + dy;
         // check x and y are not out of bounds
         if (x < 0 || x >= 10 || y >= 20) { console.log("edge"); return false; }
         // check square is not already filled
-        if (grid[get1Dindex(x, y, 10)] != 0) { console.log("hit", x, y); return false; }
+        if (grid[get1Dindex(Math.round(x), Math.round(y), 10)] != 0) { console.log("hit", x, y); return false; }
     }
     // if none of the sqaure collide with an existing sqaure then let it fall
     console.log("fine");
@@ -76,12 +75,7 @@ function canPieceMove(dx = 0, dy = 0) {
 
 function movePiece(dx, dy, SQUARE_SIZE) {
     if (canPieceMove(dx, dy)) {
-        piecePosInt = [piecePosInt[0] + dx, piecePosInt[1] + dy];
-        if (moving) {
-            piecePos = [piecePos[0] + dx, piecePos[1] + dy];
-        } else {
-            piecePos = piecePosInt;
-        }
+        piecePos = [piecePos[0] + dx, piecePos[1] + dy];
         drawGrid(ctx, grid, SQUARE_SIZE);
     } else {
         // if movement is downwards then set piece into the grid
@@ -96,7 +90,6 @@ function startMovingPiece(dx, dy, SQUARE_SIZE, time) {
     if (moving) {return;}
 
     if (canPieceMove(dx, dy)) {
-        console.log("moving now!", piecePosInt, piecePos);
         moving = true;
         steps = 100;
         falling = setInterval(() => {
@@ -116,16 +109,15 @@ function startMovingPiece(dx, dy, SQUARE_SIZE, time) {
 function finishMovingPiece(dx, dy) {
     clearInterval(falling);
     moving = false;
-    piecePosInt = [piecePosInt[0] + dx, piecePosInt[1] + dy];
-    piecePos = piecePosInt; //solve any rounding errors
+    piecePos = [Math.round(piecePos[0]), Math.round(piecePos[1])];
 }
 
 function setIntoGrid(SQUARE_SIZE) {
     getPieceConfig(piece, rotation).forEach(s => {
         var [xoff, yoff] = get2Dcoords(s, 4);
-        x = piecePosInt[0] + xoff;
-        y = piecePosInt[1] + yoff;
-        grid[get1Dindex(x, y, 10)] = piece;
+        x = piecePos[0] + xoff;
+        y = piecePos[1] + yoff;
+        grid[get1Dindex(Math.round(x), Math.round(y), 10)] = piece;
     });
     //check for row clear
     clearLines();
@@ -301,8 +293,7 @@ function onKeyDown(e, SQUARE_SIZE) {
                     tmp = piece;
                     piece = heldPiece;
                     heldPiece = tmp;
-                    piecePosInt = [3, 0];
-                    piecePos = piecePosInt;
+                    piecePos = [3, 0];
                     rotation = 0;
                 }
                 break;
