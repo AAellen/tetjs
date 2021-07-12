@@ -7,7 +7,6 @@ const app = express();
 app.use(bodyParser.urlencoded({extended: true}))
 
 const PORT = 3638;
-const domain="localhost";
 
 app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "public")));
