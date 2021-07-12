@@ -11,9 +11,9 @@ function get2Dcoords(idx, width) {
 }
 
 function increaseScore(dScore, SQUARE_SIZE) {
-    prev=score;
+    prev = score;
     score += dScore;
-    if (Math.floor(score/150)>Math.floor(prev/150)){
+    if (Math.floor(score / 150) > Math.floor(prev / 150)) {
         document.dispatchEvent(new Event('speedUp'));
     }
     drawScore(ctx, SQUARE_SIZE);
@@ -44,13 +44,14 @@ function getPieceConfig(pieceNum, orientation) {
 function genNextPiece(SQUARE_SIZE) {
     swappedHeld = false;
     piece = nextPieces.shift();
-    piecePos = [3, 0];
+    piecePosInt = [3, 0];
+    piecePos = piecePosInt;
     nextPieces = nextPieces.concat(randint(1, 7));
 
     drawNext(ctx, SQUARE_SIZE);
     // ensure that spawned piece doesn't overlap with others already in the grid
-    for (rotation=0; rotation<4; rotation++){
-        if(canPieceMove(0,0)){ return true; }
+    for (rotation = 0; rotation < 4; rotation++) {
+        if (canPieceMove(0, 0)) { return true; }
     }
     document.dispatchEvent(new Event("Game Over"));
     return false;
@@ -61,82 +62,127 @@ function canPieceMove(dx = 0, dy = 0) {
     occupied = getPieceConfig(piece, rotation);
     for (i = 0; i < occupied.length; i++) {
         var [xoff, yoff] = get2Dcoords(occupied[i], 4);
-        x = piecePos[0] + xoff + dx;
-        y = piecePos[1] + yoff + dy;
+        x = piecePosInt[0] + xoff + dx;
+        y = piecePosInt[1] + yoff + dy;
         // check x and y are not out of bounds
-        if (x < 0 || x >= 10 || y >= 20) { return false; }
+        if (x < 0 || x >= 10 || y >= 20) { console.log("edge"); return false; }
         // check square is not already filled
-        if (grid[get1Dindex(x, y, 10)] != 0) { return false; }
-
+        if (grid[get1Dindex(x, y, 10)] != 0) { console.log("hit", x, y); return false; }
     }
     // if none of the sqaure collide with an existing sqaure then let it fall
+    console.log("fine");
     return true;
 }
 
 function movePiece(dx, dy, SQUARE_SIZE) {
+    console.log(piecePosInt[1], dy)
     if (canPieceMove(dx, dy)) {
-        piecePos = [piecePos[0] + dx, piecePos[1] + dy];
+        piecePosInt = [piecePosInt[0] + dx, piecePosInt[1] + dy];
+        if(moving){
+            piecePos = [piecePos[0] + dx, piecePos[1] + dy];
+        }else{
+            piecePos=piecePosInt;
+        }
         drawGrid(ctx, grid, SQUARE_SIZE);
     } else {
+        console.log("cannot move piece")
         // if movement is downwards then set piece into the grid
         if (dy > 0) {
-            getPieceConfig(piece, rotation).forEach(s => {
-                var [xoff, yoff] = get2Dcoords(s, 4);
-                x = piecePos[0] + xoff;
-                y = piecePos[1] + yoff;
-                grid[get1Dindex(x, y, 10)] = piece;
-            });
-            //check for row clear
-            clearLines();
-            // and get the next piece
-            increaseScore(1, SQUARE_SIZE);
-            if (genNextPiece(SQUARE_SIZE)) {
-                drawGrid(ctx, grid, SQUARE_SIZE);
-            };
+            setIntoGrid(SQUARE_SIZE);
         }
         return false;
     }
 }
 
-function clearLines(SQUARE_SIZE){
+function startMovingPiece(dx, dy, SQUARE_SIZE, time) {
+    if (moving) {
+        console.log("already moving");
+        return;
+    }
+    
+    if (canPieceMove(dx, dy)) {
+        console.log("moving now!", piecePosInt, piecePos);
+        moving = true;
+        steps = 100;
+        falling = setInterval(() => {
+            piecePos = [piecePos[0] + dx / steps, piecePos[1] + dy / steps];
+            drawGrid(ctx, grid, SQUARE_SIZE);
+        }, time / steps);
+    } else {
+        if (dy > 0) {
+            setIntoGrid(SQUARE_SIZE);
+            // start moving the nex piece straight away
+            moving = false;
+            //startMovingPiece(dx, dy, SQUARE_SIZE, time);
+        }
+    }
+}
+
+function finishMovingPiece(dx, dy) {
+    clearInterval(falling);
+    moving = false;
+    piecePosInt = [piecePosInt[0] + dx, piecePosInt[1] + dy];
+    console.log("end", piecePosInt, piecePos)
+    piecePos = piecePosInt; //solve any rounding errors
+}
+
+function setIntoGrid(SQUARE_SIZE) {
+    console.log("setting", piecePos, piecePosInt)
+    getPieceConfig(piece, rotation).forEach(s => {
+        var [xoff, yoff] = get2Dcoords(s, 4);
+        x = piecePosInt[0] + xoff;
+        y = piecePosInt[1] + yoff;
+        grid[get1Dindex(x, y, 10)] = piece;
+    });
+    //check for row clear
+    clearLines();
+    // and get the next piece
+    increaseScore(1, SQUARE_SIZE);
+    if (genNextPiece(SQUARE_SIZE)) {
+        drawGrid(ctx, grid, SQUARE_SIZE);
+        console.log(getPieceColour(piece));
+    }
+}
+
+function clearLines(SQUARE_SIZE) {
     cleared = [];
-    for (i=19; i>=0; i--){
+    for (i = 19; i >= 0; i--) {
         foundEmpty = false;
-        for(j=0; j<10; j++){
-            if (grid[get1Dindex(j, i, 10)]==0){
+        for (j = 0; j < 10; j++) {
+            if (grid[get1Dindex(j, i, 10)] == 0) {
                 //this line has an empty square so ignore it
                 foundEmpty = true;
                 break;
             }
         }
-        if(!foundEmpty){
+        if (!foundEmpty) {
             cleared = cleared.concat(i);
         }
     }
-    for(i=0; i<cleared.length; i++){
+    for (i = 0; i < cleared.length; i++) {
         // adjust y index of line to clear according to how many lines have been cleared underneath it
-        line = cleared[i] +i;
+        line = cleared[i] + i;
         // remove all from full line
-        for(j=0; j<10; j++){
+        for (j = 0; j < 10; j++) {
             grid[get1Dindex(j, line)] = 0;
         }
         // shift all rows above it down
-        
-        for(j=line; j>0; j--){
-            for(k=0; k<10; k++){
-                grid[get1Dindex(k, j, 10)] = grid[get1Dindex(k, j-1, 10)];
+
+        for (j = line; j > 0; j--) {
+            for (k = 0; k < 10; k++) {
+                grid[get1Dindex(k, j, 10)] = grid[get1Dindex(k, j - 1, 10)];
             }
         }
         // and make top row blank
-        for(k=0; k<10; k++){
+        for (k = 0; k < 10; k++) {
             grid[get1Dindex(k, 0)] = 0;
         }
-        tmp=i;
+        tmp = i;
         drawGrid(ctx, grid, SQUARE_SIZE);
-        i=tmp;
+        i = tmp;
     }
 
-    increaseScore(cleared.length*5, SQUARE_SIZE);
+    increaseScore(cleared.length * 5, SQUARE_SIZE);
 }
 
 function drawBackground(context, SQUARE_SIZE) {
@@ -151,18 +197,21 @@ function drawBackground(context, SQUARE_SIZE) {
     drawScore(context, SQUARE_SIZE);
 }
 function drawGrid(context, grid, SQUARE_SIZE, gridWidth = 10) {
-    // create copy of grid with the moving piece inside it
-    newGrid = grid.filter(() => true); // this is a really stupid way to copy an array
+    // draw fixed pieces
+    for (i = 0; i < grid.length; i++) {
+        var [x, y] = get2Dcoords(i, gridWidth);
+        context.fillStyle = getPieceColour(grid[i]); // change colour based on contents of square
+        context.fillRect(x * SQUARE_SIZE, y * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
+    }
+    // draw falling piece
+    context.fillStyle = getPieceColour(piece); // change colour based on contents of square
+
     getPieceConfig(piece, rotation).forEach((elem) => {
         [xoff, yoff] = get2Dcoords(elem, 4);
-        idx = get1Dindex(piecePos[0] + xoff, piecePos[1] + yoff, 10);
-        newGrid[idx] = piece;
+        x = piecePos[0] + xoff
+        y = piecePos[1] + yoff;
+        context.fillRect(x * SQUARE_SIZE, y * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
     });
-    for (i = 0; i < newGrid.length; i++) {
-        var [x, y] = get2Dcoords(i, gridWidth);
-        context.fillStyle = getPieceColour(newGrid[i]); // change colour based on contents of square
-        context.fillRect(x * SQUARE_SIZE + 1, y * SQUARE_SIZE + 1, SQUARE_SIZE - 2, SQUARE_SIZE - 2)
-    }
 }
 function drawScore(context, SQUARE_SIZE) {
     text = `Score: ${score}`;
@@ -173,21 +222,21 @@ function drawScore(context, SQUARE_SIZE) {
     context.fillText(text, 12 * SQUARE_SIZE, 12 * SQUARE_SIZE + h, 4 * SQUARE_SIZE);
 }
 
-function drawNext(context, SQUARE_SIZE){ 
-    context.fillStyle='grey';
+function drawNext(context, SQUARE_SIZE) {
+    context.fillStyle = 'grey';
     context.font = 'bold 18px monospace';
     yoff = context.measureText("Next").actualBoundingBoxAscent + 2;
-    xoff=13 * SQUARE_SIZE;
+    xoff = 13 * SQUARE_SIZE;
     context.fillText("Next", 13 * SQUARE_SIZE, yoff - 2);
 
     for (i = 0; i < 5; i++) {
         context.fillRect(13 * SQUARE_SIZE, yoff + i * 2 * SQUARE_SIZE, 2 * SQUARE_SIZE, 2 * SQUARE_SIZE);
         colour = getPieceColour(nextPieces[i]);
         config = getPieceConfig(nextPieces[i], 0);
-        for(j=0; j<16; j++){
-            [x,y] = get2Dcoords(j, 4);
-            context.fillStyle = config.includes(j)? colour: 'white';
-            context.fillRect(xoff + x*SQUARE_SIZE*0.5, yoff + (i*2*SQUARE_SIZE) + (y*0.5*SQUARE_SIZE), 0.5*SQUARE_SIZE, 0.5*SQUARE_SIZE)
+        for (j = 0; j < 16; j++) {
+            [x, y] = get2Dcoords(j, 4);
+            context.fillStyle = config.includes(j) ? colour : 'white';
+            context.fillRect(xoff + x * SQUARE_SIZE * 0.5, yoff + (i * 2 * SQUARE_SIZE) + (y * 0.5 * SQUARE_SIZE), 0.5 * SQUARE_SIZE, 0.5 * SQUARE_SIZE)
         }
     }
     // draw boxes around the next pieces
@@ -196,33 +245,35 @@ function drawNext(context, SQUARE_SIZE){
     }
 }
 
-function bindFall(SQUARE_SIZE){
+function bindFall(SQUARE_SIZE) {
+    moving = false;
+    startMovingPiece(0, 1, SQUARE_SIZE, 2000 / fallSpeed);
     interval = setInterval(() => {
-        movePiece(0, 1, SQUARE_SIZE);
+        finishMovingPiece(0, 1)
+        startMovingPiece(0, 1, SQUARE_SIZE, 2000 / fallSpeed);
     }, 2000 / fallSpeed);
     return interval;
 }
-function unbindFall(){
+function unbindFall() {
     clearInterval(pieceFallInterval);
+    clearInterval(falling);
 }
-function bindKeyDown(SQUARE_SIZE){
+function bindKeyDown(SQUARE_SIZE) {
     //check keydown is not already binded to not overwrite the prev_keydown
-    if (typeof(prev_keydown)==='undefined'){
-        prev_keydown=window.onkeydown;
+    if (typeof (prev_keydown) === 'undefined') {
+        prev_keydown = window.onkeydown;
         window.onkeydown = (e) => { onKeyDown(e, SQUARE_SIZE); return false };
-    }else{
+    } else {
         console.log("already bound")
     }
-    
 }
-function unbindKeyDown(){
+function unbindKeyDown() {
     window.onkeydown = prev_keydown;
-    prev_keydown=undefined;
+    prev_keydown = undefined;
 }
 
 function onKeyDown(e, SQUARE_SIZE) {
-    if (binding=='')
-    {
+    if (binding == '') {
         switch (e.code) {
             case controls["move left"]:
                 movePiece(-1, 0, SQUARE_SIZE);
@@ -232,8 +283,6 @@ function onKeyDown(e, SQUARE_SIZE) {
                 break;
             case controls["soft down"]:
                 movePiece(0, 1, SQUARE_SIZE);
-                unbindFall();
-                pieceFallInterval = bindFall(SQUARE_SIZE);
                 break;
             case controls["hard down"]:
                 do {
@@ -271,15 +320,15 @@ function onKeyDown(e, SQUARE_SIZE) {
                 console.log(e);
                 break;
         }
-    }else{
+    } else {
         console.log("binding", e.code)
         controls[binding] = e.code;
-        for(i=0;i<bindMenu.childElementCount; i++){
-            if(bindMenu.children[i].className=="key-bind"){
+        for (i = 0; i < bindMenu.childElementCount; i++) {
+            if (bindMenu.children[i].className == "key-bind") {
 
-                if(bindMenu.children[i].children[0].innerText==binding){
-                    bindMenu.children[i].children[1].innerText=e.code; //display the new bind
-                }else if(bindMenu.children[i].children[1].innerText==e.code){
+                if (bindMenu.children[i].children[0].innerText == binding) {
+                    bindMenu.children[i].children[1].innerText = e.code; //display the new bind
+                } else if (bindMenu.children[i].children[1].innerText == e.code) {
                     //unbind other controls with this key
                     controls[bindMenu.children[i].children[0].innerText] = '';
                     bindMenu.children[i].children[1].innerText = '';
@@ -289,7 +338,7 @@ function onKeyDown(e, SQUARE_SIZE) {
     }
 }
 function startGame(SQUARE_SIZE) {
-    pauseMenu.className="display-none";
+    pauseMenu.className = "display-none";
     grid = new Int8Array(200) // 10x20 grid
     nextPieces = Array.from({ length: 5 }, () => randint(1, 7));
     piece = 0;
@@ -297,10 +346,8 @@ function startGame(SQUARE_SIZE) {
     fallSpeed = 1;
     score = 0;
     genNextPiece(SQUARE_SIZE);
-
     drawBackground(ctx, SQUARE_SIZE);
     drawGrid(ctx, grid, SQUARE_SIZE);
-    drawScore(ctx, SQUARE_SIZE);
 
     bindKeyDown(SQUARE_SIZE);
     pieceFallInterval = bindFall(SQUARE_SIZE);
@@ -309,10 +356,10 @@ function startGame(SQUARE_SIZE) {
         drawGrid(ctx, grid, SQUARE_SIZE);
         unbindFall();
         unbindKeyDown();
-        gameOver.className="";
+        gameOver.className = "";
         gameOver.innerHTML = `<h3>Game Over</h3><h5>Score: ${score}</h5>`;
         gameOver.appendChild(btnReplay);
-        btnReplay.className="btn-submit";
+        btnReplay.className = "btn-submit";
     });
     document.addEventListener('speedUp', () => {
         fallSpeed++;
@@ -322,10 +369,10 @@ function startGame(SQUARE_SIZE) {
     document.addEventListener('pause', () => {
         unbindFall();
         unbindKeyDown();
-        pauseMenu.className="";// not display-none
-        btnPlay.className="display-none";
-        btnReplay.className="btn-submit";
-        btnContinue.className="btn-submit";
+        pauseMenu.className = "";// not display-none
+        btnPlay.className = "display-none";
+        btnReplay.className = "btn-submit";
+        btnContinue.className = "btn-submit";
     });
     document.addEventListener('unPause', () => {
         pieceFallInterval = bindFall(SQUARE_SIZE);
@@ -340,21 +387,21 @@ window.addEventListener('DOMContentLoaded', (event) => {
     canvas.height = SQUARE_SIZE * 20;
     canvas.width = SQUARE_SIZE * 16;
     ctx = canvas.getContext("2d");
-    binding='';
-    
+    binding = '';
+
     // create html for pause menu and game over menu
     pauseMenu = document.createElement("div");
-    pauseMenu.id='menu';
+    pauseMenu.id = 'menu';
     pauseMenu.style.height = `${15 * SQUARE_SIZE}px`;
     pauseMenu.style.width = `${12 * SQUARE_SIZE}px`;
     bindMenu = document.createElement("div");
-    bindMenu.id='bind-menu';
-    bindMenu.className="display-none";
+    bindMenu.id = 'bind-menu';
+    bindMenu.className = "display-none";
     bindMenu.style.minHeight = `${15 * SQUARE_SIZE}px`;
     bindMenu.style.minWidth = `${12 * SQUARE_SIZE}px`;
     gameOver = document.createElement("div");
     gameOver.id = "game-over";
-    gameOver.className="display-none";
+    gameOver.className = "display-none";
     gameOver.style.height = `${15 * SQUARE_SIZE}px`;
     gameOver.style.width = `${12 * SQUARE_SIZE}px`;
     btnPlay = document.createElement("button");
@@ -367,11 +414,11 @@ window.addEventListener('DOMContentLoaded', (event) => {
     btnReplay.innerText = "Restart";
     btnReplay.className = "display-none";
     btnReplay.onclick = () => {
-        if (btnReplay.parentElement.id=="game-over"){
-            gameOver.className="display-none";
+        if (btnReplay.parentElement.id == "game-over") {
+            gameOver.className = "display-none";
             pauseMenu.appendChild(btnReplay);
-        }else{
-            pauseMenu.className="display-none";
+        } else {
+            pauseMenu.className = "display-none";
         }
         startGame(SQUARE_SIZE);
     }
@@ -398,49 +445,49 @@ window.addEventListener('DOMContentLoaded', (event) => {
         document.dispatchEvent(new Event('bind'));
     }
     bindKeyDown(SQUARE_SIZE);
-    for(var key in controls){
-        div=document.createElement("div");
-        keySpan=document.createElement("span");
-        valSpan=document.createElement("span");
-        div.className="key-bind"
-        valSpan.className="bind-btn"
-        keySpan.innerText=key;
-        valSpan.innerText=controls[key];
-        
-        valSpan.onclick= (e)=>{
+    for (var key in controls) {
+        div = document.createElement("div");
+        keySpan = document.createElement("span");
+        valSpan = document.createElement("span");
+        div.className = "key-bind"
+        valSpan.className = "bind-btn"
+        keySpan.innerText = key;
+        valSpan.innerText = controls[key];
+
+        valSpan.onclick = (e) => {
             // can't just set binding=key; because key will be the last value
             binding = e.target.parentElement.children[0].innerText;
             //highlight this one and unhighlight others
-            for(i=0;i<bindMenu.childElementCount; i++){
-                if(bindMenu.children[i].className=="key-bind"){
-                    bindMenu.children[i].children[1].className="bind-btn";
+            for (i = 0; i < bindMenu.childElementCount; i++) {
+                if (bindMenu.children[i].className == "key-bind") {
+                    bindMenu.children[i].children[1].className = "bind-btn";
                 }
             }
-            e.target.className="bind-btn binding";
+            e.target.className = "bind-btn binding";
         }
         div.appendChild(keySpan);
         div.appendChild(valSpan);
         bindMenu.appendChild(div)
     }
-    bckBtn=document.createElement("button");
-    bckBtn.innerText="Back";
-    bckBtn.className="btn-submit";
-    bckBtn.onclick = ()=>{
-        bindMenu.className="display-none";
-        pauseMenu.className="";
-        binding='';
+    bckBtn = document.createElement("button");
+    bckBtn.innerText = "Back";
+    bckBtn.className = "btn-submit";
+    bckBtn.onclick = () => {
+        bindMenu.className = "display-none";
+        pauseMenu.className = "";
+        binding = '';
     }
     bindMenu.appendChild(bckBtn);
     document.addEventListener('bind', () => {
-        binding='';
-        pauseMenu.className="display-none";
-        bindMenu.className="";
-        for(i=0;i<bindMenu.childElementCount; i++){
-            if(bindMenu.children[i].className=="key-bind"){
-                bindMenu.children[i].children[1].className="bind-btn";
+        binding = '';
+        pauseMenu.className = "display-none";
+        bindMenu.className = "";
+        for (i = 0; i < bindMenu.childElementCount; i++) {
+            if (bindMenu.children[i].className == "key-bind") {
+                bindMenu.children[i].children[1].className = "bind-btn";
             }
         }
-        
+
     });
     pauseMenu.appendChild(btnPlay);
     pauseMenu.appendChild(btnContinue);
