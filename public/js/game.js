@@ -309,7 +309,8 @@ function onKeyDown(e, SQUARE_SIZE) {
                     tmp = piece;
                     piece = heldPiece;
                     heldPiece = tmp;
-                    piecePos = [3, 0];
+                    piecePosInt = [3, 0];
+                    piecePos = piecePosInt;
                     rotation = 0;
                 }
                 break;
