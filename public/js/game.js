@@ -206,61 +206,86 @@ function unbindFall(){
     clearInterval(pieceFallInterval);
 }
 function bindKeyDown(SQUARE_SIZE){
-    prev_keydown=window.onkeydown;
-    window.onkeydown = (e) => { onKeyDown(e, SQUARE_SIZE); return false };
+    //check keydown is not already binded to not overwrite the prev_keydown
+    if (typeof(prev_keydown)==='undefined'){
+        prev_keydown=window.onkeydown;
+        window.onkeydown = (e) => { onKeyDown(e, SQUARE_SIZE); return false };
+    }else{
+        console.log("already bound")
+    }
+    
 }
 function unbindKeyDown(){
     window.onkeydown = prev_keydown;
+    prev_keydown=undefined;
 }
 
 function onKeyDown(e, SQUARE_SIZE) {
-    switch (e.code) {
-        case controls["moveLeft"]:
-            movePiece(-1, 0, SQUARE_SIZE);
-            break;
-        case controls["moveRight"]:
-            movePiece(1, 0, SQUARE_SIZE);
-            break;
-        case controls["softDown"]:
-            movePiece(0, 1, SQUARE_SIZE);
-            unbindFall();
-            pieceFallInterval = bindFall(SQUARE_SIZE);
-            break;
-        case controls["hardDown"]:
-            do {
-                res = movePiece(0, 1, SQUARE_SIZE);
+    if (binding=='')
+    {
+        switch (e.code) {
+            case controls["move left"]:
+                movePiece(-1, 0, SQUARE_SIZE);
+                break;
+            case controls["move right"]:
+                movePiece(1, 0, SQUARE_SIZE);
+                break;
+            case controls["soft down"]:
+                movePiece(0, 1, SQUARE_SIZE);
+                unbindFall();
+                pieceFallInterval = bindFall(SQUARE_SIZE);
+                break;
+            case controls["hard down"]:
+                do {
+                    res = movePiece(0, 1, SQUARE_SIZE);
+                }
+                while (res != false)
+                break;
+            case controls["rotate left"]:
+                rotation += 1;
+                rotation %= 4;
+                drawGrid(ctx, grid, SQUARE_SIZE);
+                break;
+            case controls["rotate right"]:
+                rotation -= 1;
+                rotation = (rotation + 4) % 4;
+                drawGrid(ctx, grid, SQUARE_SIZE);
+                break;
+            case controls["hold"]:
+                if (heldPiece == 0) {
+                    heldPiece = piece;
+                    genNextPiece(SQUARE_SIZE);
+                    swappedHeld = true;
+                } else if (swappedHeld == false) {
+                    tmp = piece;
+                    piece = heldPiece;
+                    heldPiece = tmp;
+                    piecePos = [3, 0];
+                    rotation = 0;
+                }
+                break;
+            case controls["pause"]:
+                document.dispatchEvent(new Event("pause"));
+                break;
+            default:
+                console.log(e);
+                break;
+        }
+    }else{
+        console.log("binding", e.code)
+        controls[binding] = e.code;
+        for(i=0;i<bindMenu.childElementCount; i++){
+            if(bindMenu.children[i].className=="key-bind"){
+
+                if(bindMenu.children[i].children[0].innerText==binding){
+                    bindMenu.children[i].children[1].innerText=e.code; //display the new bind
+                }else if(bindMenu.children[i].children[1].innerText==e.code){
+                    //unbind other controls with this key
+                    controls[bindMenu.children[i].children[0].innerText] = '';
+                    bindMenu.children[i].children[1].innerText = '';
+                }
             }
-            while (res != false)
-            break;
-        case controls["rotLeft"]:
-            rotation += 1;
-            rotation %= 4;
-            drawGrid(ctx, grid, SQUARE_SIZE);
-            break;
-        case controls["rotRight"]:
-            rotation -= 1;
-            rotation = (rotation + 4) % 4;
-            drawGrid(ctx, grid, SQUARE_SIZE);
-            break;
-        case controls["hold"]:
-            if (heldPiece == 0) {
-                heldPiece = piece;
-                genNextPiece(SQUARE_SIZE);
-                swappedHeld = true;
-            } else if (swappedHeld == false) {
-                tmp = piece;
-                piece = heldPiece;
-                heldPiece = tmp;
-                piecePos = [3, 0];
-                rotation = 0;
-            }
-            break;
-        case "Escape":
-            document.dispatchEvent(new Event("pause"));
-            break;
-        default:
-            console.log(e);
-            break;
+        }
     }
 }
 function startGame(SQUARE_SIZE) {
@@ -272,15 +297,6 @@ function startGame(SQUARE_SIZE) {
     fallSpeed = 1;
     score = 0;
     genNextPiece(SQUARE_SIZE);
-    controls = {
-        "moveLeft": "KeyA",
-        "moveRight": "KeyD",
-        "softDown": "KeyS",
-        "hardDown": "Space",
-        "rotLeft": "KeyQ",
-        "rotRight": "KeyE",
-        "hold": "KeyR"
-    };
 
     drawBackground(ctx, SQUARE_SIZE);
     drawGrid(ctx, grid, SQUARE_SIZE);
@@ -288,7 +304,6 @@ function startGame(SQUARE_SIZE) {
 
     bindKeyDown(SQUARE_SIZE);
     pieceFallInterval = bindFall(SQUARE_SIZE);
-    console.log(window.onkeydown);
 
     document.addEventListener('Game Over', () => {
         drawGrid(ctx, grid, SQUARE_SIZE);
@@ -325,12 +340,18 @@ window.addEventListener('DOMContentLoaded', (event) => {
     canvas.height = SQUARE_SIZE * 20;
     canvas.width = SQUARE_SIZE * 16;
     ctx = canvas.getContext("2d");
+    binding='';
     
     // create html for pause menu and game over menu
     pauseMenu = document.createElement("div");
     pauseMenu.id='menu';
     pauseMenu.style.height = `${15 * SQUARE_SIZE}px`;
     pauseMenu.style.width = `${12 * SQUARE_SIZE}px`;
+    bindMenu = document.createElement("div");
+    bindMenu.id='bind-menu';
+    bindMenu.className="display-none";
+    bindMenu.style.minHeight = `${15 * SQUARE_SIZE}px`;
+    bindMenu.style.minWidth = `${12 * SQUARE_SIZE}px`;
     gameOver = document.createElement("div");
     gameOver.id = "game-over";
     gameOver.className="display-none";
@@ -360,10 +381,73 @@ window.addEventListener('DOMContentLoaded', (event) => {
     btnContinue.onclick = () => {
         document.dispatchEvent(new Event('unPause'));
     }
+    controls = {
+        "move left": "KeyA",
+        "move right": "KeyD",
+        "soft down": "KeyS",
+        "hard down": "Space",
+        "rotate left": "KeyQ",
+        "rotate right": "KeyE",
+        "hold": "KeyR",
+        "pause": "Escape"
+    };
+    btnBind = document.createElement("button");
+    btnBind.innerText = "Controls";
+    btnBind.className = "btn-submit";
+    btnBind.onclick = () => {
+        document.dispatchEvent(new Event('bind'));
+    }
+    bindKeyDown(SQUARE_SIZE);
+    for(var key in controls){
+        div=document.createElement("div");
+        keySpan=document.createElement("span");
+        valSpan=document.createElement("span");
+        div.className="key-bind"
+        valSpan.className="bind-btn"
+        keySpan.innerText=key;
+        valSpan.innerText=controls[key];
+        
+        valSpan.onclick= (e)=>{
+            // can't just set binding=key; because key will be the last value
+            binding = e.target.parentElement.children[0].innerText;
+            //highlight this one and unhighlight others
+            for(i=0;i<bindMenu.childElementCount; i++){
+                if(bindMenu.children[i].className=="key-bind"){
+                    bindMenu.children[i].children[1].className="bind-btn";
+                }
+            }
+            e.target.className="bind-btn binding";
+        }
+        div.appendChild(keySpan);
+        div.appendChild(valSpan);
+        bindMenu.appendChild(div)
+    }
+    bckBtn=document.createElement("button");
+    bckBtn.innerText="Back";
+    bckBtn.className="btn-submit";
+    bckBtn.onclick = ()=>{
+        bindMenu.className="display-none";
+        pauseMenu.className="";
+        binding='';
+    }
+    bindMenu.appendChild(bckBtn);
+    document.addEventListener('bind', () => {
+        binding='';
+        pauseMenu.className="display-none";
+        bindMenu.className="";
+        for(i=0;i<bindMenu.childElementCount; i++){
+            if(bindMenu.children[i].className=="key-bind"){
+                bindMenu.children[i].children[1].className="bind-btn";
+            }
+        }
+        
+    });
     pauseMenu.appendChild(btnPlay);
     pauseMenu.appendChild(btnContinue);
+    pauseMenu.appendChild(btnBind);
     pauseMenu.appendChild(btnReplay);
 
     canvas.parentElement.appendChild(pauseMenu);
+    canvas.parentElement.appendChild(bindMenu);
     canvas.parentElement.appendChild(gameOver);
 });
