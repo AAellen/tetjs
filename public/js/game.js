@@ -113,7 +113,7 @@ function movePiece(dx, dy, SQUARE_SIZE) {
     }
 }
 
-function stepPiece(dx, dy, time, SQUARE_SIZE) {
+function stepPiece(dx, dy, time, SQUARE_SIZE, callback=undefined) {
     if (canPieceMove(dx, dy)) {
         let count = 0;
         let steps = 25;
@@ -125,6 +125,9 @@ function stepPiece(dx, dy, time, SQUARE_SIZE) {
             }
             else{
                 clearInterval(interval);
+                if (callback!=undefined){
+                    callback();
+                }
             }
         }, time / steps);
         return interval;
@@ -280,13 +283,19 @@ function onKeyDown(e, SQUARE_SIZE) {
     if (binding == '') {
         switch (e.code) {
             case controls["move left"]:
-                stepPiece(-1, 0, 200, SQUARE_SIZE);
+                if (typeof(leftSlide) =='undefined') {
+                    lefttSlide = stepPiece(-1, 0, 200, SQUARE_SIZE, ()=>leftSlide=undefined);
+                }
                 break;
             case controls["move right"]:
-                stepPiece(1, 0, 200, SQUARE_SIZE);
+                if (typeof(rightSlide) =='undefined') {
+                    rightSlide = stepPiece(1, 0, 200, SQUARE_SIZE, ()=>rightSlide=undefined);
+                }
                 break;
             case controls["soft down"]:
-                stepPiece(0, 1, 200, SQUARE_SIZE);
+                if (typeof(downSlide) =='undefined') {
+                    downSlide = stepPiece(0, 1, 200, SQUARE_SIZE, ()=>downSlide=undefined);
+                }
                 break;
             case controls["hard down"]:
                 do {
