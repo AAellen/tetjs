@@ -257,13 +257,15 @@ function drawNext(context, SQUARE_SIZE) {
 }
 
 function bindFall(SQUARE_SIZE) {
+    fallingInterval = stepPiece(0, 1, 2000 / fallSpeed, SQUARE_SIZE);
     interval = setInterval(() => {
-        stepPiece(0, 1, 2000 / fallSpeed, SQUARE_SIZE);
+        fallingInterval = stepPiece(0, 1, 2000 / fallSpeed, SQUARE_SIZE);
     }, 2000 / fallSpeed);
     return interval;
 }
 function unbindFall() {
     clearInterval(pieceFallInterval);
+    clearInterval(fallingInterval);
 }
 function bindKeyDown(SQUARE_SIZE) {
     //check keydown is not already binded to not overwrite the prev_keydown
