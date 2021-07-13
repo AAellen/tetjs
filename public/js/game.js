@@ -211,7 +211,7 @@ function drawGrid(context, grid, SQUARE_SIZE, gridWidth = 10) {
     for (i = 0; i < grid.length; i++) {
         var [x, y] = get2Dcoords(i, gridWidth);
         context.fillStyle = getPieceColour(grid[i]); // change colour based on contents of square
-        context.fillRect(x * SQUARE_SIZE, y * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
+        drawSquare(context, x, y, mode, SQUARE_SIZE);
     }
     // draw falling piece
     context.fillStyle = getPieceColour(piece); // change colour based on contents of square
@@ -220,8 +220,15 @@ function drawGrid(context, grid, SQUARE_SIZE, gridWidth = 10) {
         [xoff, yoff] = get2Dcoords(elem, 4);
         x = piecePos[0] + xoff;
         y = piecePos[1] + yoff;
-        context.fillRect(x * SQUARE_SIZE, y * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
+        drawSquare(context, x, y, mode, SQUARE_SIZE);
     });
+}
+function drawSquare(context, x, y, mode, SQUARE_SIZE){
+    if (mode=="real"){
+        context.fillRect(x * SQUARE_SIZE, y * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
+    }else{
+        context.fillRect(x * SQUARE_SIZE+1, y * SQUARE_SIZE+1, SQUARE_SIZE-2, SQUARE_SIZE-2);
+    }
 }
 function drawScore(context, SQUARE_SIZE) {
     text = `Score: ${score}`;
@@ -317,13 +324,11 @@ function onKeyDown(e, SQUARE_SIZE, mode) {
             case controls["hard down"]:
                 if (mode=="classic"){
                     do {
-                    
                         res = movePiece(0, 1, SQUARE_SIZE);
                     }
                     while (res!=false);
                 }else {
                     do {
-                        
                         res = stepPiece(0, 1, SQUARE_SIZE);
                     }
                     while (res!=undefined);
