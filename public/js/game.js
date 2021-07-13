@@ -284,7 +284,7 @@ function onKeyDown(e, SQUARE_SIZE) {
         switch (e.code) {
             case controls["move left"]:
                 if (typeof(leftSlide) =='undefined') {
-                    lefttSlide = stepPiece(-1, 0, 200, SQUARE_SIZE, ()=>leftSlide=undefined);
+                    leftSlide = stepPiece(-1, 0, 200, SQUARE_SIZE, ()=>leftSlide=undefined);
                 }
                 break;
             case controls["move right"]:
