@@ -131,9 +131,9 @@ footer{
     justify-content:space-between;
 }
 
-footer > p{
-    color: var(--lgrey);
-    font-size: 0.8em;
+footer > p, footer>p>*{
+    color: var(--lgrey) !important;
+    font-size: 0.8rem;
 }
 footer > span{
     display: flex;
