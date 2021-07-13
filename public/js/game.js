@@ -408,7 +408,7 @@ function startGame(SQUARE_SIZE, mode) {
     document.addEventListener('speedUp', () => {
         fallSpeed++;
         unbindFall(mode);
-        pieceFallInterval = bindFall(SQUARE_SIZE);
+        pieceFallInterval = bindFall(SQUARE_SIZE, mode);
     });
     document.addEventListener('pause', () => {
         unbindFall(mode);
@@ -471,7 +471,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         } else {
             pauseMenu.className = "display-none";
         }
-        startGame(SQUARE_SIZE);
+        startGame(SQUARE_SIZE, mode);
     };
     btnContinue = document.createElement("button");
     btnContinue.innerText = "Continue";
