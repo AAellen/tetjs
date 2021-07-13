@@ -400,10 +400,9 @@ function startGame(SQUARE_SIZE, mode) {
         drawGrid(ctx, grid, SQUARE_SIZE);
         unbindFall(mode);
         unbindKeyDown(mode);
+        pauseMenu.className = "";
+        gameOver.innerHTML = `<h2>Game Over</h2><h3>Score: ${score}</h3>`;
         gameOver.className = "";
-        gameOver.innerHTML = `<h3>Game Over</h3><h5>Score: ${score}</h5>`;
-        gameOver.appendChild(btnReplay);
-        btnReplay.className = "btn-submit";
     });
     document.addEventListener('speedUp', () => {
         fallSpeed++;
@@ -422,7 +421,8 @@ function startGame(SQUARE_SIZE, mode) {
     document.addEventListener('unPause', () => {
         pieceFallInterval = bindFall(SQUARE_SIZE, mode);
         bindKeyDown(SQUARE_SIZE, mode);
-        btnContinue.parentElement.className = "display-none";
+        gameOver.className = "display-none";
+        pauseMenu.className = "display-none";
     });
 }
 
@@ -444,11 +444,9 @@ window.addEventListener('DOMContentLoaded', (event) => {
     bindMenu.className = "display-none";
     bindMenu.style.minHeight = `${15 * SQUARE_SIZE}px`;
     bindMenu.style.minWidth = `${12 * SQUARE_SIZE}px`;
-    gameOver = document.createElement("div");
-    gameOver.id = "game-over";
-    gameOver.className = "display-none";
-    gameOver.style.height = `${15 * SQUARE_SIZE}px`;
-    gameOver.style.width = `${12 * SQUARE_SIZE}px`;
+    gameOver = document.createElement("span");
+    gameOver.id="game-over";
+    gameOver.className="display-none";
     btnPlayClassic = document.createElement("button");
     btnPlayClassic.innerText = "Play Classic";
     btnPlayClassic.className = "btn-submit";
@@ -465,12 +463,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
     btnReplay.innerText = "Restart";
     btnReplay.className = "display-none";
     btnReplay.onclick = () => {
-        if (btnReplay.parentElement.id == "game-over") {
-            gameOver.className = "display-none";
-            pauseMenu.appendChild(btnReplay);
-        } else {
-            pauseMenu.className = "display-none";
-        }
+        pauseMenu.className = "display-none";
+        gameOver.className = "display-none";
         startGame(SQUARE_SIZE, mode);
     };
     btnContinue = document.createElement("button");
@@ -540,6 +534,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
 
     });
+    pauseMenu.appendChild(gameOver);
     pauseMenu.appendChild(btnPlayClassic);
     pauseMenu.appendChild(btnPlayReal);
     pauseMenu.appendChild(btnContinue);
@@ -548,5 +543,4 @@ window.addEventListener('DOMContentLoaded', (event) => {
 
     canvas.parentElement.appendChild(pauseMenu);
     canvas.parentElement.appendChild(bindMenu);
-    canvas.parentElement.appendChild(gameOver);
 });
