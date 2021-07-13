@@ -152,7 +152,6 @@ function setIntoGrid(SQUARE_SIZE) {
     increaseScore(1, SQUARE_SIZE);
     if (genNextPiece(SQUARE_SIZE)) {
         drawGrid(ctx, grid, SQUARE_SIZE);
-        console.log(getPieceColour(piece));
     }
 }
 
@@ -256,54 +255,79 @@ function drawNext(context, SQUARE_SIZE) {
     }
 }
 
-function bindFall(SQUARE_SIZE) {
-    fallingInterval = stepPiece(0, 1, 2000 / fallSpeed, SQUARE_SIZE);
-    interval = setInterval(() => {
+function bindFall(SQUARE_SIZE, mode) {
+    if(mode=="classic"){
+        interval = setInterval(() => {
+            movePiece(0, 1, SQUARE_SIZE);
+        }, 2000 / fallSpeed);
+    }
+    else{
         fallingInterval = stepPiece(0, 1, 2000 / fallSpeed, SQUARE_SIZE);
-    }, 2000 / fallSpeed);
+        interval = setInterval(() => {
+            fallingInterval = stepPiece(0, 1, 2000 / fallSpeed, SQUARE_SIZE);
+        }, 2000 / fallSpeed);
+    }
     return interval;
 }
 function unbindFall() {
     clearInterval(pieceFallInterval);
-    clearInterval(fallingInterval);
+    if (mode=="real"){
+        clearInterval(fallingInterval);
+    }
 }
-function bindKeyDown(SQUARE_SIZE) {
+function bindKeyDown(SQUARE_SIZE, mode) {
     //check keydown is not already binded to not overwrite the prev_keydown
     if (typeof (prev_keydown) === 'undefined') {
         prev_keydown = window.onkeydown;
-        window.onkeydown = (e) => { onKeyDown(e, SQUARE_SIZE); return false };
-    } else {
-        console.log("already bound");
     }
+    window.onkeydown = (e) => { onKeyDown(e, SQUARE_SIZE, mode); return false };
 }
 function unbindKeyDown() {
     window.onkeydown = prev_keydown;
     prev_keydown = undefined;
 }
 
-function onKeyDown(e, SQUARE_SIZE) {
+function onKeyDown(e, SQUARE_SIZE, mode) {
     if (binding == '') {
         switch (e.code) {
             case controls["move left"]:
-                if (typeof(leftSlide) =='undefined') {
-                    leftSlide = stepPiece(-1, 0, 200, SQUARE_SIZE, ()=>leftSlide=undefined);
+                if (mode=="classic"){
+                    movePiece(-1, 0, SQUARE_SIZE);
+                }
+                else if (typeof(leftSlide) =='undefined') {
+                        leftSlide = stepPiece(-1, 0, 200, SQUARE_SIZE, ()=>leftSlide=undefined);
                 }
                 break;
             case controls["move right"]:
-                if (typeof(rightSlide) =='undefined') {
-                    rightSlide = stepPiece(1, 0, 200, SQUARE_SIZE, ()=>rightSlide=undefined);
+                if (mode=="classic"){
+                    movePiece(1, 0, SQUARE_SIZE);
+                }
+                else if (typeof(rightSlide) =='undefined') {
+                        rightSlide = stepPiece(1, 0, 200, SQUARE_SIZE, ()=>rightSlide=undefined);
                 }
                 break;
             case controls["soft down"]:
-                if (typeof(downSlide) =='undefined') {
+                if (mode=="classic"){
+                    movePiece(0, 1, SQUARE_SIZE);
+                }
+                else if (typeof(downSlide) =='undefined') {
                     downSlide = stepPiece(0, 1, 200, SQUARE_SIZE, ()=>downSlide=undefined);
                 }
                 break;
             case controls["hard down"]:
-                do {
-                    res = movePiece(0, 1, SQUARE_SIZE);
+                if (mode=="classic"){
+                    do {
+                    
+                        res = movePiece(0, 1, SQUARE_SIZE);
+                    }
+                    while (res!=false);
+                }else {
+                    do {
+                        
+                        res = stepPiece(0, 1, SQUARE_SIZE);
+                    }
+                    while (res!=undefined);
                 }
-                while (res != false);
                 break;
             case controls["rotate left"]:
                 rotation += 1;
@@ -336,7 +360,6 @@ function onKeyDown(e, SQUARE_SIZE) {
                 break;
         }
     } else {
-        console.log("binding", e.code)
         controls[binding] = e.code;
         for (i = 0; i < bindMenu.childElementCount; i++) {
             if (bindMenu.children[i].className == "key-bind") {
@@ -352,7 +375,7 @@ function onKeyDown(e, SQUARE_SIZE) {
         }
     }
 }
-function startGame(SQUARE_SIZE) {
+function startGame(SQUARE_SIZE, mode) {
     pauseMenu.className = "display-none";
     grid = new Int8Array(200) // 10x20 grid
     nextPieces = Array.from({ length: 5 }, () => randint(1, 7));
@@ -364,13 +387,14 @@ function startGame(SQUARE_SIZE) {
     drawBackground(ctx, SQUARE_SIZE);
     drawGrid(ctx, grid, SQUARE_SIZE);
 
-    bindKeyDown(SQUARE_SIZE);
-    pieceFallInterval = bindFall(SQUARE_SIZE);
+    bindKeyDown(SQUARE_SIZE, mode);
+    pieceFallInterval = bindFall(SQUARE_SIZE, mode);
+
 
     document.addEventListener('Game Over', () => {
         drawGrid(ctx, grid, SQUARE_SIZE);
-        unbindFall();
-        unbindKeyDown();
+        unbindFall(mode);
+        unbindKeyDown(mode);
         gameOver.className = "";
         gameOver.innerHTML = `<h3>Game Over</h3><h5>Score: ${score}</h5>`;
         gameOver.appendChild(btnReplay);
@@ -378,21 +402,22 @@ function startGame(SQUARE_SIZE) {
     });
     document.addEventListener('speedUp', () => {
         fallSpeed++;
-        unbindFall();
+        unbindFall(mode);
         pieceFallInterval = bindFall(SQUARE_SIZE);
     });
     document.addEventListener('pause', () => {
-        unbindFall();
-        unbindKeyDown();
+        unbindFall(mode);
+        unbindKeyDown(mode);
         pauseMenu.className = "";// not display-none
-        btnPlay.className = "display-none";
+        btnPlayClassic.className = "display-none";
+        btnPlayReal.className="display-none";
         btnReplay.className = "btn-submit";
         btnContinue.className = "btn-submit";
     });
     document.addEventListener('unPause', () => {
-        pieceFallInterval = bindFall(SQUARE_SIZE);
-        bindKeyDown(SQUARE_SIZE);
-        btnPlay.parentElement.className = "display-none";
+        pieceFallInterval = bindFall(SQUARE_SIZE, mode);
+        bindKeyDown(SQUARE_SIZE, mode);
+        btnContinue.parentElement.className = "display-none";
     });
 }
 
@@ -419,11 +444,17 @@ window.addEventListener('DOMContentLoaded', (event) => {
     gameOver.className = "display-none";
     gameOver.style.height = `${15 * SQUARE_SIZE}px`;
     gameOver.style.width = `${12 * SQUARE_SIZE}px`;
-    btnPlay = document.createElement("button");
-    btnPlay.innerText = "Start Game";
-    btnPlay.className = "btn-submit";
-    btnPlay.onclick = () => {
-        startGame(SQUARE_SIZE);
+    btnPlayClassic = document.createElement("button");
+    btnPlayClassic.innerText = "Play Classic";
+    btnPlayClassic.className = "btn-submit";
+    btnPlayClassic.onclick = () => {
+        startGame(SQUARE_SIZE, mode="classic");
+    }
+    btnPlayReal = document.createElement("button");
+    btnPlayReal.innerText = "Play Real";
+    btnPlayReal.className = "btn-submit";
+    btnPlayReal.onclick = () => {
+        startGame(SQUARE_SIZE, mode="real");
     }
     btnReplay = document.createElement("button");
     btnReplay.innerText = "Restart";
@@ -504,7 +535,8 @@ window.addEventListener('DOMContentLoaded', (event) => {
         }
 
     });
-    pauseMenu.appendChild(btnPlay);
+    pauseMenu.appendChild(btnPlayClassic);
+    pauseMenu.appendChild(btnPlayReal);
     pauseMenu.appendChild(btnContinue);
     pauseMenu.appendChild(btnBind);
     pauseMenu.appendChild(btnReplay);
