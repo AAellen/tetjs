@@ -276,7 +276,7 @@ function bindFall(SQUARE_SIZE, mode) {
     }
     return interval;
 }
-function unbindFall() {
+function unbindFall(mode) {
     clearInterval(pieceFallInterval);
     if (mode=="real"){
         clearInterval(fallingInterval);
