@@ -64,14 +64,41 @@ function canPieceMove(dx = 0, dy = 0) {
         x = piecePos[0] + xoff + dx;
         y = piecePos[1] + yoff + dy;
         // check x and y are not out of bounds
-        if (x < 0 || x >= 10 || y >= 20) { console.log("edge"); return false; }
+        if (Math.round(x) < 0 || Math.round(x) >= 10 || y >= 20) {return false; }
         // check square is not already filled
-        if (grid[get1Dindex(Math.round(x), Math.round(y), 10)] != 0) { console.log("hit", x, y); return false; }
+        if (grid[get1Dindex(Math.round(x), Math.round(y), 10)] != 0) { return false; }
     }
     // if none of the sqaure collide with an existing sqaure then let it fall
-    console.log("fine");
     return true;
 }
+
+
+
+// function startMovingPiece(dx, dy, SQUARE_SIZE, time) {
+//     if (moving) { return; }
+
+//     if (canPieceMove(dx, dy)) {
+//         moving = true;
+//         steps = 100;
+//         falling = setInterval(() => {
+//             piecePos = [piecePos[0] + dx / steps, piecePos[1] + dy / steps];
+//             drawGrid(ctx, grid, SQUARE_SIZE);
+//         }, time / steps);
+//     } else {
+//         if (dy > 0) {
+//             setIntoGrid(SQUARE_SIZE);
+//             // start moving the nex piece straight away
+//             moving = false;
+//             //startMovingPiece(dx, dy, SQUARE_SIZE, time);
+//         }
+//     }
+// }
+
+// function finishMovingPiece() {
+//     clearInterval(falling);
+//     moving = false;
+//     piecePos = [Math.round(piecePos[0]), Math.round(piecePos[1])];
+// }
 
 function movePiece(dx, dy, SQUARE_SIZE) {
     if (canPieceMove(dx, dy)) {
@@ -86,30 +113,27 @@ function movePiece(dx, dy, SQUARE_SIZE) {
     }
 }
 
-function startMovingPiece(dx, dy, SQUARE_SIZE, time) {
-    if (moving) {return;}
-
+function stepPiece(dx, dy, time, SQUARE_SIZE) {
     if (canPieceMove(dx, dy)) {
-        moving = true;
-        steps = 100;
-        falling = setInterval(() => {
-            piecePos = [piecePos[0] + dx / steps, piecePos[1] + dy / steps];
-            drawGrid(ctx, grid, SQUARE_SIZE);
+        let count = 0;
+        let steps = 25;
+        let interval = setInterval(() => {
+            count++;
+            if (count < steps) {
+                piecePos = [piecePos[0] + dx/steps, piecePos[1] + dy/steps];
+                drawGrid(ctx, grid, SQUARE_SIZE);
+            }
+            else{
+                clearInterval(interval);
+            }
         }, time / steps);
+        return interval;
     } else {
         if (dy > 0) {
             setIntoGrid(SQUARE_SIZE);
-            // start moving the nex piece straight away
-            moving = false;
-            //startMovingPiece(dx, dy, SQUARE_SIZE, time);
         }
+        return undefined;
     }
-}
-
-function finishMovingPiece(dx, dy) {
-    clearInterval(falling);
-    moving = false;
-    piecePos = [Math.round(piecePos[0]), Math.round(piecePos[1])];
 }
 
 function setIntoGrid(SQUARE_SIZE) {
@@ -230,17 +254,13 @@ function drawNext(context, SQUARE_SIZE) {
 }
 
 function bindFall(SQUARE_SIZE) {
-    moving = false;
-    startMovingPiece(0, 1, SQUARE_SIZE, 2000 / fallSpeed);
     interval = setInterval(() => {
-        finishMovingPiece(0, 1);
-        startMovingPiece(0, 1, SQUARE_SIZE, 2000 / fallSpeed);
+        stepPiece(0, 1, 2000 / fallSpeed, SQUARE_SIZE);
     }, 2000 / fallSpeed);
     return interval;
 }
 function unbindFall() {
     clearInterval(pieceFallInterval);
-    clearInterval(falling);
 }
 function bindKeyDown(SQUARE_SIZE) {
     //check keydown is not already binded to not overwrite the prev_keydown
@@ -260,13 +280,13 @@ function onKeyDown(e, SQUARE_SIZE) {
     if (binding == '') {
         switch (e.code) {
             case controls["move left"]:
-                movePiece(-1, 0, SQUARE_SIZE);
+                stepPiece(-1, 0, 200, SQUARE_SIZE);
                 break;
             case controls["move right"]:
-                movePiece(1, 0, SQUARE_SIZE);
+                stepPiece(1, 0, 200, SQUARE_SIZE);
                 break;
             case controls["soft down"]:
-                movePiece(0, 1, SQUARE_SIZE);
+                stepPiece(0, 1, 200, SQUARE_SIZE);
                 break;
             case controls["hard down"]:
                 do {
