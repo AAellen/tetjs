@@ -106,7 +106,9 @@ function stepPiece(dx, dy, time, SQUARE_SIZE, callback=undefined) {
         return interval;
     } else {
         if (dy > 0) {
-            setIntoGrid(SQUARE_SIZE);
+            if(setIntoGrid(SQUARE_SIZE)===false){
+                return null;
+            }
         }
         return undefined;
     }
@@ -125,6 +127,9 @@ function setIntoGrid(SQUARE_SIZE) {
     increaseScore(1, SQUARE_SIZE);
     if (genNextPiece(SQUARE_SIZE)) {
         drawGrid(ctx, grid, SQUARE_SIZE);
+        return true;
+    }else{
+        return false;
     }
 }
 
@@ -243,9 +248,11 @@ function bindFall(SQUARE_SIZE, mode) {
     }
     else{
         fallingInterval = stepPiece(0, 1, 2000 / fallSpeed, SQUARE_SIZE);
-        interval = setInterval(() => {
-            fallingInterval = stepPiece(0, 1, 2000 / fallSpeed, SQUARE_SIZE);
-        }, 2000 / fallSpeed);
+        if(fallingInterval!==null){
+            interval = setInterval(() => {
+                fallingInterval = stepPiece(0, 1, 2000 / fallSpeed, SQUARE_SIZE);
+            }, 2000 / fallSpeed);
+        }
     }
     return interval;
 }
@@ -312,7 +319,7 @@ function onKeyDown(e, SQUARE_SIZE, mode) {
                     while (res);
                     stepPiece(0, x-1, 100, SQUARE_SIZE, ()=>{
                         prev_bound=pieceFallInterval;
-                        movePiece(0, 1, SQUARE_SIZE);
+                        setIntoGrid(SQUARE_SIZE);
                         // only rebind if we didn't rebind from speeding up
                         if (prev_bound==pieceFallInterval){
                             pieceFallInterval=bindFall(SQUARE_SIZE, mode);
