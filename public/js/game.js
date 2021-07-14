@@ -73,33 +73,6 @@ function canPieceMove(dx = 0, dy = 0) {
 }
 
 
-
-// function startMovingPiece(dx, dy, SQUARE_SIZE, time) {
-//     if (moving) { return; }
-
-//     if (canPieceMove(dx, dy)) {
-//         moving = true;
-//         steps = 100;
-//         falling = setInterval(() => {
-//             piecePos = [piecePos[0] + dx / steps, piecePos[1] + dy / steps];
-//             drawGrid(ctx, grid, SQUARE_SIZE);
-//         }, time / steps);
-//     } else {
-//         if (dy > 0) {
-//             setIntoGrid(SQUARE_SIZE);
-//             // start moving the nex piece straight away
-//             moving = false;
-//             //startMovingPiece(dx, dy, SQUARE_SIZE, time);
-//         }
-//     }
-// }
-
-// function finishMovingPiece() {
-//     clearInterval(falling);
-//     moving = false;
-//     piecePos = [Math.round(piecePos[0]), Math.round(piecePos[1])];
-// }
-
 function movePiece(dx, dy, SQUARE_SIZE) {
     if (canPieceMove(dx, dy)) {
         piecePos = [piecePos[0] + dx, piecePos[1] + dy];
