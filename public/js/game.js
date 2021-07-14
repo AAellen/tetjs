@@ -119,7 +119,7 @@ function stepPiece(dx, dy, time, SQUARE_SIZE, callback=undefined) {
         let steps = 25;
         let interval = setInterval(() => {
             count++;
-            if (count < steps) {
+            if (count <= steps) {
                 piecePos = [piecePos[0] + dx/steps, piecePos[1] + dy/steps];
                 drawGrid(ctx, grid, SQUARE_SIZE);
             }
