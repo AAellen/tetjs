@@ -538,6 +538,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
     bindMenu.appendChild(bckBtn);
     document.addEventListener('bind', () => {
         binding = '';
+        bindKeyDown(SQUARE_SIZE, mode);
         pauseMenu.className = "display-none";
         bindMenu.className = "";
         for (i = 0; i < bindMenu.childElementCount; i++) {
