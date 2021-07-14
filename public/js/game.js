@@ -328,10 +328,23 @@ function onKeyDown(e, SQUARE_SIZE, mode) {
                     }
                     while (res!=false);
                 }else {
+                    unbindFall(mode);
+                    if(typeof(downSlide)!='undefined'){clearInterval(downSlide); downSlide=undefined;}
+                    piecePos[1] = Math.ceil(piecePos[1])
+                    let x=0;
                     do {
-                        res = stepPiece(0, 1, SQUARE_SIZE);
+                        x++;
+                        res = canPieceMove(0, x);
                     }
-                    while (res!=undefined);
+                    while (res);
+                    stepPiece(0, x-1, 100, SQUARE_SIZE, ()=>{
+                        prev_bound=pieceFallInterval;
+                        movePiece(0, 1, SQUARE_SIZE);
+                        // only rebind if we didn't rebind from speeding up
+                        if (prev_bound==pieceFallInterval){
+                            pieceFallInterval=bindFall(SQUARE_SIZE, mode);
+                        }
+                    });
                 }
                 break;
             case controls["rotate left"]:
