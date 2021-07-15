@@ -11,9 +11,9 @@ function get2Dcoords(idx, width) {
 }
 
 function increaseScore(dScore, SQUARE_SIZE) {
-    prev=score;
+    prev = score;
     score += dScore;
-    if (Math.floor(score/150)>Math.floor(prev/150)){
+    if (Math.floor(score / 150) > Math.floor(prev / 150)) {
         document.dispatchEvent(new Event('speedUp'));
     }
     drawScore(ctx, SQUARE_SIZE);
@@ -49,8 +49,8 @@ function genNextPiece(SQUARE_SIZE) {
 
     drawNext(ctx, SQUARE_SIZE);
     // ensure that spawned piece doesn't overlap with others already in the grid
-    for (rotation=0; rotation<4; rotation++){
-        if(canPieceMove(0,0)){ return true; }
+    for (rotation = 0; rotation < 4; rotation++) {
+        if (canPieceMove(0, 0)) { return true; }
     }
     document.dispatchEvent(new Event("Game Over"));
     return false;
@@ -64,14 +64,14 @@ function canPieceMove(dx = 0, dy = 0) {
         x = piecePos[0] + xoff + dx;
         y = piecePos[1] + yoff + dy;
         // check x and y are not out of bounds
-        if (x < 0 || x >= 10 || y >= 20) { return false; }
+        if (Math.round(x) < 0 || Math.round(x) >= 10 || y >= 20) {return false; }
         // check square is not already filled
-        if (grid[get1Dindex(x, y, 10)] != 0) { return false; }
-
+        if (grid[get1Dindex(Math.round(x), Math.round(y), 10)] != 0) { return false; }
     }
     // if none of the sqaure collide with an existing sqaure then let it fall
     return true;
 }
+
 
 function movePiece(dx, dy, SQUARE_SIZE) {
     if (canPieceMove(dx, dy)) {
@@ -80,63 +80,97 @@ function movePiece(dx, dy, SQUARE_SIZE) {
     } else {
         // if movement is downwards then set piece into the grid
         if (dy > 0) {
-            getPieceConfig(piece, rotation).forEach(s => {
-                var [xoff, yoff] = get2Dcoords(s, 4);
-                x = piecePos[0] + xoff;
-                y = piecePos[1] + yoff;
-                grid[get1Dindex(x, y, 10)] = piece;
-            });
-            //check for row clear
-            clearLines();
-            // and get the next piece
-            increaseScore(1, SQUARE_SIZE);
-            if (genNextPiece(SQUARE_SIZE)) {
-                drawGrid(ctx, grid, SQUARE_SIZE);
-            };
+            setIntoGrid(SQUARE_SIZE);
         }
         return false;
     }
 }
 
-function clearLines(SQUARE_SIZE){
+function stepPiece(dx, dy, time, SQUARE_SIZE, callback=undefined) {
+    if (canPieceMove(dx, dy)) {
+        let count = 0;
+        let steps = 25;
+        let interval = setInterval(() => {
+            count++;
+            if (count <= steps) {
+                piecePos = [piecePos[0] + dx/steps, piecePos[1] + dy/steps];
+                drawGrid(ctx, grid, SQUARE_SIZE);
+            }
+            else{
+                clearInterval(interval);
+                if (callback!=undefined){
+                    callback();
+                }
+            }
+        }, time / steps);
+        return interval;
+    } else {
+        if (dy > 0) {
+            if(setIntoGrid(SQUARE_SIZE)===false){
+                return null;
+            }
+        }
+        return undefined;
+    }
+}
+
+function setIntoGrid(SQUARE_SIZE) {
+    getPieceConfig(piece, rotation).forEach(s => {
+        var [xoff, yoff] = get2Dcoords(s, 4);
+        x = piecePos[0] + xoff;
+        y = piecePos[1] + yoff;
+        grid[get1Dindex(Math.round(x), Math.round(y), 10)] = piece;
+    });
+    //check for row clear
+    clearLines();
+    // and get the next piece
+    increaseScore(1, SQUARE_SIZE);
+    if (genNextPiece(SQUARE_SIZE)) {
+        drawGrid(ctx, grid, SQUARE_SIZE);
+        return true;
+    }else{
+        return false;
+    }
+}
+
+function clearLines(SQUARE_SIZE) {
     cleared = [];
-    for (i=19; i>=0; i--){
+    for (i = 19; i >= 0; i--) {
         foundEmpty = false;
-        for(j=0; j<10; j++){
-            if (grid[get1Dindex(j, i, 10)]==0){
+        for (j = 0; j < 10; j++) {
+            if (grid[get1Dindex(j, i, 10)] == 0) {
                 //this line has an empty square so ignore it
                 foundEmpty = true;
                 break;
             }
         }
-        if(!foundEmpty){
+        if (!foundEmpty) {
             cleared = cleared.concat(i);
         }
     }
-    for(i=0; i<cleared.length; i++){
+    for (i = 0; i < cleared.length; i++) {
         // adjust y index of line to clear according to how many lines have been cleared underneath it
-        line = cleared[i] +i;
+        line = cleared[i] + i;
         // remove all from full line
-        for(j=0; j<10; j++){
+        for (j = 0; j < 10; j++) {
             grid[get1Dindex(j, line)] = 0;
         }
         // shift all rows above it down
-        
-        for(j=line; j>0; j--){
-            for(k=0; k<10; k++){
-                grid[get1Dindex(k, j, 10)] = grid[get1Dindex(k, j-1, 10)];
+
+        for (j = line; j > 0; j--) {
+            for (k = 0; k < 10; k++) {
+                grid[get1Dindex(k, j, 10)] = grid[get1Dindex(k, j - 1, 10)];
             }
         }
         // and make top row blank
-        for(k=0; k<10; k++){
+        for (k = 0; k < 10; k++) {
             grid[get1Dindex(k, 0)] = 0;
         }
-        tmp=i;
+        tmp = i;
         drawGrid(ctx, grid, SQUARE_SIZE);
-        i=tmp;
+        i = tmp;
     }
-
-    increaseScore(cleared.length*5, SQUARE_SIZE);
+    increaseScore(cleared.length * 5, SQUARE_SIZE);
 }
 
 function drawBackground(context, SQUARE_SIZE) {
@@ -151,17 +185,27 @@ function drawBackground(context, SQUARE_SIZE) {
     drawScore(context, SQUARE_SIZE);
 }
 function drawGrid(context, grid, SQUARE_SIZE, gridWidth = 10) {
-    // create copy of grid with the moving piece inside it
-    newGrid = grid.filter(() => true); // this is a really stupid way to copy an array
+    // draw fixed pieces
+    for (i = 0; i < grid.length; i++) {
+        var [x, y] = get2Dcoords(i, gridWidth);
+        context.fillStyle = getPieceColour(grid[i]); // change colour based on contents of square
+        drawSquare(context, x, y, mode, SQUARE_SIZE);
+    }
+    // draw falling piece
+    context.fillStyle = getPieceColour(piece); // change colour based on contents of square
+
     getPieceConfig(piece, rotation).forEach((elem) => {
         [xoff, yoff] = get2Dcoords(elem, 4);
-        idx = get1Dindex(piecePos[0] + xoff, piecePos[1] + yoff, 10);
-        newGrid[idx] = piece;
+        x = piecePos[0] + xoff;
+        y = piecePos[1] + yoff;
+        drawSquare(context, x, y, mode, SQUARE_SIZE);
     });
-    for (i = 0; i < newGrid.length; i++) {
-        var [x, y] = get2Dcoords(i, gridWidth);
-        context.fillStyle = getPieceColour(newGrid[i]); // change colour based on contents of square
-        context.fillRect(x * SQUARE_SIZE + 1, y * SQUARE_SIZE + 1, SQUARE_SIZE - 2, SQUARE_SIZE - 2)
+}
+function drawSquare(context, x, y, mode, SQUARE_SIZE){
+    if (mode=="real"){
+        context.fillRect(x * SQUARE_SIZE, y * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
+    }else{
+        context.fillRect(x * SQUARE_SIZE+1, y * SQUARE_SIZE+1, SQUARE_SIZE-2, SQUARE_SIZE-2);
     }
 }
 function drawScore(context, SQUARE_SIZE) {
@@ -173,21 +217,21 @@ function drawScore(context, SQUARE_SIZE) {
     context.fillText(text, 12 * SQUARE_SIZE, 12 * SQUARE_SIZE + h, 4 * SQUARE_SIZE);
 }
 
-function drawNext(context, SQUARE_SIZE){ 
-    context.fillStyle='grey';
+function drawNext(context, SQUARE_SIZE) {
+    context.fillStyle = 'grey';
     context.font = 'bold 18px monospace';
     yoff = context.measureText("Next").actualBoundingBoxAscent + 2;
-    xoff=13 * SQUARE_SIZE;
+    xoff = 13 * SQUARE_SIZE;
     context.fillText("Next", 13 * SQUARE_SIZE, yoff - 2);
 
     for (i = 0; i < 5; i++) {
         context.fillRect(13 * SQUARE_SIZE, yoff + i * 2 * SQUARE_SIZE, 2 * SQUARE_SIZE, 2 * SQUARE_SIZE);
         colour = getPieceColour(nextPieces[i]);
         config = getPieceConfig(nextPieces[i], 0);
-        for(j=0; j<16; j++){
-            [x,y] = get2Dcoords(j, 4);
-            context.fillStyle = config.includes(j)? colour: 'white';
-            context.fillRect(xoff + x*SQUARE_SIZE*0.5, yoff + (i*2*SQUARE_SIZE) + (y*0.5*SQUARE_SIZE), 0.5*SQUARE_SIZE, 0.5*SQUARE_SIZE)
+        for (j = 0; j < 16; j++) {
+            [x, y] = get2Dcoords(j, 4);
+            context.fillStyle = config.includes(j) ? colour : 'white';
+            context.fillRect(xoff + x * SQUARE_SIZE * 0.5, yoff + (i * 2 * SQUARE_SIZE) + (y * 0.5 * SQUARE_SIZE), 0.5 * SQUARE_SIZE, 0.5 * SQUARE_SIZE)
         }
     }
     // draw boxes around the next pieces
@@ -196,50 +240,92 @@ function drawNext(context, SQUARE_SIZE){
     }
 }
 
-function bindFall(SQUARE_SIZE){
-    interval = setInterval(() => {
-        movePiece(0, 1, SQUARE_SIZE);
-    }, 2000 / fallSpeed);
+function bindFall(SQUARE_SIZE, mode) {
+    if(mode=="classic"){
+        interval = setInterval(() => {
+            movePiece(0, 1, SQUARE_SIZE);
+        }, 2000 / fallSpeed);
+    }
+    else{
+        fallingInterval = stepPiece(0, 1, 2000 / fallSpeed, SQUARE_SIZE);
+        if(fallingInterval!==null){
+            interval = setInterval(() => {
+                fallingInterval = stepPiece(0, 1, 2000 / fallSpeed, SQUARE_SIZE);
+            }, 2000 / fallSpeed);
+        }
+    }
     return interval;
 }
-function unbindFall(){
+function unbindFall(mode) {
     clearInterval(pieceFallInterval);
-}
-function bindKeyDown(SQUARE_SIZE){
-    //check keydown is not already binded to not overwrite the prev_keydown
-    if (typeof(prev_keydown)==='undefined'){
-        prev_keydown=window.onkeydown;
-        window.onkeydown = (e) => { onKeyDown(e, SQUARE_SIZE); return false };
-    }else{
-        console.log("already bound")
+    if (mode=="real"){
+        clearInterval(fallingInterval);
     }
-    
 }
-function unbindKeyDown(){
+function bindKeyDown(SQUARE_SIZE, mode) {
+    //check keydown is not already binded to not overwrite the prev_keydown
+    if (typeof (prev_keydown) === 'undefined') {
+        prev_keydown = window.onkeydown;
+    }
+    window.onkeydown = (e) => { onKeyDown(e, SQUARE_SIZE, mode); return false };
+}
+function unbindKeyDown() {
     window.onkeydown = prev_keydown;
-    prev_keydown=undefined;
+    prev_keydown = undefined;
 }
 
-function onKeyDown(e, SQUARE_SIZE) {
-    if (binding=='')
-    {
+function onKeyDown(e, SQUARE_SIZE, mode) {
+    if (binding == '') {
         switch (e.code) {
             case controls["move left"]:
-                movePiece(-1, 0, SQUARE_SIZE);
+                if (mode=="classic"){
+                    movePiece(-1, 0, SQUARE_SIZE);
+                }
+                else if (typeof(leftSlide) =='undefined') {
+                        leftSlide = stepPiece(-1, 0, 100, SQUARE_SIZE, ()=>leftSlide=undefined);
+                }
                 break;
             case controls["move right"]:
-                movePiece(1, 0, SQUARE_SIZE);
+                if (mode=="classic"){
+                    movePiece(1, 0, SQUARE_SIZE);
+                }
+                else if (typeof(rightSlide) =='undefined') {
+                        rightSlide = stepPiece(1, 0, 100, SQUARE_SIZE, ()=>rightSlide=undefined);
+                }
                 break;
             case controls["soft down"]:
-                movePiece(0, 1, SQUARE_SIZE);
-                unbindFall();
-                pieceFallInterval = bindFall(SQUARE_SIZE);
+                if (mode=="classic"){
+                    movePiece(0, 1, SQUARE_SIZE);
+                }
+                else if (typeof(downSlide) =='undefined') {
+                    downSlide = stepPiece(0, 1, 100, SQUARE_SIZE, ()=>downSlide=undefined);
+                }
                 break;
             case controls["hard down"]:
-                do {
-                    res = movePiece(0, 1, SQUARE_SIZE);
+                if (mode=="classic"){
+                    do {
+                        res = movePiece(0, 1, SQUARE_SIZE);
+                    }
+                    while (res!=false);
+                }else {
+                    unbindFall(mode);
+                    if(typeof(downSlide)!='undefined'){clearInterval(downSlide); downSlide=undefined;}
+                    piecePos[1] = Math.ceil(piecePos[1])
+                    let x=0;
+                    do {
+                        x++;
+                        res = canPieceMove(0, x);
+                    }
+                    while (res);
+                    stepPiece(0, x-1, 100, SQUARE_SIZE, ()=>{
+                        prev_bound=pieceFallInterval;
+                        setIntoGrid(SQUARE_SIZE);
+                        // only rebind if we didn't rebind from speeding up
+                        if (prev_bound==pieceFallInterval){
+                            pieceFallInterval=bindFall(SQUARE_SIZE, mode);
+                        }
+                    });
                 }
-                while (res != false)
                 break;
             case controls["rotate left"]:
                 rotation += 1;
@@ -271,15 +357,14 @@ function onKeyDown(e, SQUARE_SIZE) {
                 console.log(e);
                 break;
         }
-    }else{
-        console.log("binding", e.code)
+    } else {
         controls[binding] = e.code;
-        for(i=0;i<bindMenu.childElementCount; i++){
-            if(bindMenu.children[i].className=="key-bind"){
+        for (i = 0; i < bindMenu.childElementCount; i++) {
+            if (bindMenu.children[i].className == "key-bind") {
 
-                if(bindMenu.children[i].children[0].innerText==binding){
-                    bindMenu.children[i].children[1].innerText=e.code; //display the new bind
-                }else if(bindMenu.children[i].children[1].innerText==e.code){
+                if (bindMenu.children[i].children[0].innerText == binding) {
+                    bindMenu.children[i].children[1].innerText = e.code; //display the new bind
+                } else if (bindMenu.children[i].children[1].innerText == e.code) {
                     //unbind other controls with this key
                     controls[bindMenu.children[i].children[0].innerText] = '';
                     bindMenu.children[i].children[1].innerText = '';
@@ -288,8 +373,8 @@ function onKeyDown(e, SQUARE_SIZE) {
         }
     }
 }
-function startGame(SQUARE_SIZE) {
-    pauseMenu.className="display-none";
+function startGame(SQUARE_SIZE, mode) {
+    pauseMenu.className = "display-none";
     grid = new Int8Array(200) // 10x20 grid
     nextPieces = Array.from({ length: 5 }, () => randint(1, 7));
     piece = 0;
@@ -297,40 +382,40 @@ function startGame(SQUARE_SIZE) {
     fallSpeed = 1;
     score = 0;
     genNextPiece(SQUARE_SIZE);
-
     drawBackground(ctx, SQUARE_SIZE);
     drawGrid(ctx, grid, SQUARE_SIZE);
-    drawScore(ctx, SQUARE_SIZE);
 
-    bindKeyDown(SQUARE_SIZE);
-    pieceFallInterval = bindFall(SQUARE_SIZE);
+    bindKeyDown(SQUARE_SIZE, mode);
+    pieceFallInterval = bindFall(SQUARE_SIZE, mode);
+
 
     document.addEventListener('Game Over', () => {
         drawGrid(ctx, grid, SQUARE_SIZE);
-        unbindFall();
-        unbindKeyDown();
-        gameOver.className="";
-        gameOver.innerHTML = `<h3>Game Over</h3><h5>Score: ${score}</h5>`;
-        gameOver.appendChild(btnReplay);
-        btnReplay.className="btn-submit";
+        unbindFall(mode);
+        unbindKeyDown(mode);
+        pauseMenu.className = "";
+        gameOver.innerHTML = `<h2>Game Over</h2><h3>Score: ${score}</h3>`;
+        gameOver.className = "";
     });
     document.addEventListener('speedUp', () => {
         fallSpeed++;
-        unbindFall();
-        pieceFallInterval = bindFall(SQUARE_SIZE);
+        unbindFall(mode);
+        pieceFallInterval = bindFall(SQUARE_SIZE, mode);
     });
     document.addEventListener('pause', () => {
-        unbindFall();
-        unbindKeyDown();
-        pauseMenu.className="";// not display-none
-        btnPlay.className="display-none";
-        btnReplay.className="btn-submit";
-        btnContinue.className="btn-submit";
+        unbindFall(mode);
+        unbindKeyDown(mode);
+        pauseMenu.className = "";// not display-none
+        btnPlayClassic.className = "display-none";
+        btnPlayReal.className="display-none";
+        btnReplay.className = "btn-submit";
+        btnContinue.className = "btn-submit";
     });
     document.addEventListener('unPause', () => {
-        pieceFallInterval = bindFall(SQUARE_SIZE);
-        bindKeyDown(SQUARE_SIZE);
-        btnPlay.parentElement.className = "display-none";
+        pieceFallInterval = bindFall(SQUARE_SIZE, mode);
+        bindKeyDown(SQUARE_SIZE, mode);
+        gameOver.className = "display-none";
+        pauseMenu.className = "display-none";
     });
 }
 
@@ -340,47 +425,47 @@ window.addEventListener('DOMContentLoaded', (event) => {
     canvas.height = SQUARE_SIZE * 20;
     canvas.width = SQUARE_SIZE * 16;
     ctx = canvas.getContext("2d");
-    binding='';
-    
+    binding = '';
+
     // create html for pause menu and game over menu
     pauseMenu = document.createElement("div");
-    pauseMenu.id='menu';
+    pauseMenu.id = 'menu';
     pauseMenu.style.height = `${15 * SQUARE_SIZE}px`;
     pauseMenu.style.width = `${12 * SQUARE_SIZE}px`;
     bindMenu = document.createElement("div");
-    bindMenu.id='bind-menu';
-    bindMenu.className="display-none";
+    bindMenu.id = 'bind-menu';
+    bindMenu.className = "display-none";
     bindMenu.style.minHeight = `${15 * SQUARE_SIZE}px`;
     bindMenu.style.minWidth = `${12 * SQUARE_SIZE}px`;
-    gameOver = document.createElement("div");
-    gameOver.id = "game-over";
+    gameOver = document.createElement("span");
+    gameOver.id="game-over";
     gameOver.className="display-none";
-    gameOver.style.height = `${15 * SQUARE_SIZE}px`;
-    gameOver.style.width = `${12 * SQUARE_SIZE}px`;
-    btnPlay = document.createElement("button");
-    btnPlay.innerText = "Start Game";
-    btnPlay.className = "btn-submit";
-    btnPlay.onclick = () => {
-        startGame(SQUARE_SIZE);
+    btnPlayClassic = document.createElement("button");
+    btnPlayClassic.innerText = "Play Classic";
+    btnPlayClassic.className = "btn-submit";
+    btnPlayClassic.onclick = () => {
+        startGame(SQUARE_SIZE, mode="classic");
+    }
+    btnPlayReal = document.createElement("button");
+    btnPlayReal.innerText = "Play Real";
+    btnPlayReal.className = "btn-submit";
+    btnPlayReal.onclick = () => {
+        startGame(SQUARE_SIZE, mode="real");
     }
     btnReplay = document.createElement("button");
     btnReplay.innerText = "Restart";
     btnReplay.className = "display-none";
     btnReplay.onclick = () => {
-        if (btnReplay.parentElement.id=="game-over"){
-            gameOver.className="display-none";
-            pauseMenu.appendChild(btnReplay);
-        }else{
-            pauseMenu.className="display-none";
-        }
-        startGame(SQUARE_SIZE);
-    }
+        pauseMenu.className = "display-none";
+        gameOver.className = "display-none";
+        startGame(SQUARE_SIZE, mode);
+    };
     btnContinue = document.createElement("button");
     btnContinue.innerText = "Continue";
     btnContinue.className = "display-none";
     btnContinue.onclick = () => {
         document.dispatchEvent(new Event('unPause'));
-    }
+    };
     controls = {
         "move left": "KeyA",
         "move right": "KeyD",
@@ -396,58 +481,60 @@ window.addEventListener('DOMContentLoaded', (event) => {
     btnBind.className = "btn-submit";
     btnBind.onclick = () => {
         document.dispatchEvent(new Event('bind'));
-    }
+    };
     bindKeyDown(SQUARE_SIZE);
-    for(var key in controls){
-        div=document.createElement("div");
-        keySpan=document.createElement("span");
-        valSpan=document.createElement("span");
-        div.className="key-bind"
-        valSpan.className="bind-btn"
-        keySpan.innerText=key;
-        valSpan.innerText=controls[key];
-        
-        valSpan.onclick= (e)=>{
+    for (var key in controls) {
+        div = document.createElement("div");
+        keySpan = document.createElement("span");
+        valSpan = document.createElement("span");
+        div.className = "key-bind";
+        valSpan.className = "bind-btn";
+        keySpan.innerText = key;
+        valSpan.innerText = controls[key];
+
+        valSpan.onclick = (e) => {
             // can't just set binding=key; because key will be the last value
             binding = e.target.parentElement.children[0].innerText;
             //highlight this one and unhighlight others
-            for(i=0;i<bindMenu.childElementCount; i++){
-                if(bindMenu.children[i].className=="key-bind"){
-                    bindMenu.children[i].children[1].className="bind-btn";
+            for (i = 0; i < bindMenu.childElementCount; i++) {
+                if (bindMenu.children[i].className == "key-bind") {
+                    bindMenu.children[i].children[1].className = "bind-btn";
                 }
             }
-            e.target.className="bind-btn binding";
+            e.target.className = "bind-btn binding";
         }
         div.appendChild(keySpan);
         div.appendChild(valSpan);
-        bindMenu.appendChild(div)
+        bindMenu.appendChild(div);
     }
-    bckBtn=document.createElement("button");
-    bckBtn.innerText="Back";
-    bckBtn.className="btn-submit";
-    bckBtn.onclick = ()=>{
-        bindMenu.className="display-none";
-        pauseMenu.className="";
-        binding='';
-    }
+    bckBtn = document.createElement("button");
+    bckBtn.innerText = "Back";
+    bckBtn.className = "btn-submit";
+    bckBtn.onclick = () => {
+        bindMenu.className = "display-none";
+        pauseMenu.className = "";
+        binding = '';
+    };
     bindMenu.appendChild(bckBtn);
     document.addEventListener('bind', () => {
-        binding='';
-        pauseMenu.className="display-none";
-        bindMenu.className="";
-        for(i=0;i<bindMenu.childElementCount; i++){
-            if(bindMenu.children[i].className=="key-bind"){
-                bindMenu.children[i].children[1].className="bind-btn";
+        binding = '';
+        bindKeyDown(SQUARE_SIZE, mode);
+        pauseMenu.className = "display-none";
+        bindMenu.className = "";
+        for (i = 0; i < bindMenu.childElementCount; i++) {
+            if (bindMenu.children[i].className == "key-bind") {
+                bindMenu.children[i].children[1].className = "bind-btn";
             }
         }
-        
+
     });
-    pauseMenu.appendChild(btnPlay);
+    pauseMenu.appendChild(gameOver);
+    pauseMenu.appendChild(btnPlayClassic);
+    pauseMenu.appendChild(btnPlayReal);
     pauseMenu.appendChild(btnContinue);
     pauseMenu.appendChild(btnBind);
     pauseMenu.appendChild(btnReplay);
 
     canvas.parentElement.appendChild(pauseMenu);
     canvas.parentElement.appendChild(bindMenu);
-    canvas.parentElement.appendChild(gameOver);
 });
