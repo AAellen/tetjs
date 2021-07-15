@@ -59,7 +59,7 @@ function genNextPiece(SQUARE_SIZE) {
 function canPieceMove(dx = 0, dy = 0) {
     // check that moving the current piece can fall
     occupied = getPieceConfig(piece, rotation);
-    for (i = 0; i < occupied.length; i++) {
+    for (let i = 0; i < occupied.length; i++) {
         var [xoff, yoff] = get2Dcoords(occupied[i], 4);
         x = piecePos[0] + xoff + dx;
         y = piecePos[1] + yoff + dy;
@@ -135,9 +135,9 @@ function setIntoGrid(SQUARE_SIZE) {
 
 function clearLines(SQUARE_SIZE) {
     cleared = [];
-    for (i = 19; i >= 0; i--) {
+    for (let i = 19; i >= 0; i--) {
         foundEmpty = false;
-        for (j = 0; j < 10; j++) {
+        for (let j = 0; j < 10; j++) {
             if (grid[get1Dindex(j, i, 10)] == 0) {
                 //this line has an empty square so ignore it
                 foundEmpty = true;
@@ -148,27 +148,25 @@ function clearLines(SQUARE_SIZE) {
             cleared = cleared.concat(i);
         }
     }
-    for (i = 0; i < cleared.length; i++) {
+    for (let i = 0; i < cleared.length; i++) {
         // adjust y index of line to clear according to how many lines have been cleared underneath it
         line = cleared[i] + i;
         // remove all from full line
-        for (j = 0; j < 10; j++) {
+        for (let j = 0; j < 10; j++) {
             grid[get1Dindex(j, line)] = 0;
         }
         // shift all rows above it down
 
-        for (j = line; j > 0; j--) {
-            for (k = 0; k < 10; k++) {
+        for (let j = line; j > 0; j--) {
+            for (let k = 0; k < 10; k++) {
                 grid[get1Dindex(k, j, 10)] = grid[get1Dindex(k, j - 1, 10)];
             }
         }
         // and make top row blank
-        for (k = 0; k < 10; k++) {
-            grid[get1Dindex(k, 0)] = 0;
-        }
-        tmp = i;
+        // for (let k = 0; k < 10; k++) {
+        //     grid[get1Dindex(k, 0)] = 0;
+        // }
         drawGrid(ctx, grid, SQUARE_SIZE);
-        i = tmp;
     }
     increaseScore(cleared.length * 5, SQUARE_SIZE);
 }
@@ -186,7 +184,7 @@ function drawBackground(context, SQUARE_SIZE) {
 }
 function drawGrid(context, grid, SQUARE_SIZE, gridWidth = 10) {
     // draw fixed pieces
-    for (i = 0; i < grid.length; i++) {
+    for (let i = 0; i < grid.length; i++) {
         var [x, y] = get2Dcoords(i, gridWidth);
         context.fillStyle = getPieceColour(grid[i]); // change colour based on contents of square
         drawSquare(context, x, y, mode, SQUARE_SIZE);
@@ -224,18 +222,18 @@ function drawNext(context, SQUARE_SIZE) {
     xoff = 13 * SQUARE_SIZE;
     context.fillText("Next", 13 * SQUARE_SIZE, yoff - 2);
 
-    for (i = 0; i < 5; i++) {
+    for (let i = 0; i < 5; i++) {
         context.fillRect(13 * SQUARE_SIZE, yoff + i * 2 * SQUARE_SIZE, 2 * SQUARE_SIZE, 2 * SQUARE_SIZE);
         colour = getPieceColour(nextPieces[i]);
         config = getPieceConfig(nextPieces[i], 0);
-        for (j = 0; j < 16; j++) {
+        for (let j = 0; j < 16; j++) {
             [x, y] = get2Dcoords(j, 4);
             context.fillStyle = config.includes(j) ? colour : 'white';
             context.fillRect(xoff + x * SQUARE_SIZE * 0.5, yoff + (i * 2 * SQUARE_SIZE) + (y * 0.5 * SQUARE_SIZE), 0.5 * SQUARE_SIZE, 0.5 * SQUARE_SIZE)
         }
     }
     // draw boxes around the next pieces
-    for (i = 0; i < 5; i++) {
+    for (let i = 0; i < 5; i++) {
         context.strokeRect(xoff, yoff + i * 2 * SQUARE_SIZE, 2 * SQUARE_SIZE, 2 * SQUARE_SIZE);
     }
 }
@@ -323,7 +321,7 @@ function onKeyDown(e, SQUARE_SIZE, mode) {
                         // only rebind if we didn't rebind from speeding up
                         if (prev_bound==pieceFallInterval){
                             pieceFallInterval=bindFall(SQUARE_SIZE, mode);
-                        }
+                        }else{console.log("sped up")}
                     });
                 }
                 break;
@@ -359,7 +357,7 @@ function onKeyDown(e, SQUARE_SIZE, mode) {
         }
     } else {
         controls[binding] = e.code;
-        for (i = 0; i < bindMenu.childElementCount; i++) {
+        for (let i = 0; i < bindMenu.childElementCount; i++) {
             if (bindMenu.children[i].className == "key-bind") {
 
                 if (bindMenu.children[i].children[0].innerText == binding) {
@@ -496,7 +494,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
             // can't just set binding=key; because key will be the last value
             binding = e.target.parentElement.children[0].innerText;
             //highlight this one and unhighlight others
-            for (i = 0; i < bindMenu.childElementCount; i++) {
+            for (let i = 0; i < bindMenu.childElementCount; i++) {
                 if (bindMenu.children[i].className == "key-bind") {
                     bindMenu.children[i].children[1].className = "bind-btn";
                 }
@@ -521,7 +519,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
         bindKeyDown(SQUARE_SIZE, mode);
         pauseMenu.className = "display-none";
         bindMenu.className = "";
-        for (i = 0; i < bindMenu.childElementCount; i++) {
+        for (let i = 0; i < bindMenu.childElementCount; i++) {
             if (bindMenu.children[i].className == "key-bind") {
                 bindMenu.children[i].children[1].className = "bind-btn";
             }
