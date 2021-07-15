@@ -282,7 +282,7 @@ function onKeyDown(e, SQUARE_SIZE, mode) {
                     movePiece(-1, 0, SQUARE_SIZE);
                 }
                 else if (typeof(leftSlide) =='undefined') {
-                        leftSlide = stepPiece(-1, 0, 200, SQUARE_SIZE, ()=>leftSlide=undefined);
+                        leftSlide = stepPiece(-1, 0, 100, SQUARE_SIZE, ()=>leftSlide=undefined);
                 }
                 break;
             case controls["move right"]:
@@ -290,7 +290,7 @@ function onKeyDown(e, SQUARE_SIZE, mode) {
                     movePiece(1, 0, SQUARE_SIZE);
                 }
                 else if (typeof(rightSlide) =='undefined') {
-                        rightSlide = stepPiece(1, 0, 200, SQUARE_SIZE, ()=>rightSlide=undefined);
+                        rightSlide = stepPiece(1, 0, 100, SQUARE_SIZE, ()=>rightSlide=undefined);
                 }
                 break;
             case controls["soft down"]:
@@ -298,7 +298,7 @@ function onKeyDown(e, SQUARE_SIZE, mode) {
                     movePiece(0, 1, SQUARE_SIZE);
                 }
                 else if (typeof(downSlide) =='undefined') {
-                    downSlide = stepPiece(0, 1, 200, SQUARE_SIZE, ()=>downSlide=undefined);
+                    downSlide = stepPiece(0, 1, 100, SQUARE_SIZE, ()=>downSlide=undefined);
                 }
                 break;
             case controls["hard down"]:
