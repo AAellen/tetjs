@@ -321,7 +321,7 @@ function onKeyDown(e, SQUARE_SIZE, mode) {
                         // only rebind if we didn't rebind from speeding up
                         if (prev_bound==pieceFallInterval){
                             pieceFallInterval=bindFall(SQUARE_SIZE, mode);
-                        }else{console.log("sped up")}
+                        }
                     });
                 }
                 break;
