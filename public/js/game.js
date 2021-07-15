@@ -124,8 +124,8 @@ function setIntoGrid(SQUARE_SIZE) {
     //check for row clear
     clearLines();
     // and get the next piece
-    increaseScore(1, SQUARE_SIZE);
     if (genNextPiece(SQUARE_SIZE)) {
+        increaseScore(1, SQUARE_SIZE);
         drawGrid(ctx, grid, SQUARE_SIZE);
         return true;
     }else{
