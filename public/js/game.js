@@ -168,7 +168,12 @@ function clearLines(SQUARE_SIZE) {
         // }
         drawGrid(ctx, grid, SQUARE_SIZE);
     }
-    increaseScore(cleared.length * 5, SQUARE_SIZE);
+    if (cleared.length==4){
+        increaseScore(50, SQUARE_SIZE);
+
+    }else{
+        increaseScore(cleared.length * 5, SQUARE_SIZE);
+    }
 }
 
 function drawBackground(context, SQUARE_SIZE) {
